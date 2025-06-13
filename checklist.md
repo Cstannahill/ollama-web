@@ -10,7 +10,7 @@
 ### Phase 2: Core Features (Weeks 5-8)
 
 - [x] Model download manager
-- [ ] Enhanced chat UI with markdown
+- [x] Enhanced chat UI with markdown
 - [ ] Settings and preferences
 - [ ] Export functionality
 
