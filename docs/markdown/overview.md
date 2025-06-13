@@ -9,6 +9,7 @@ Provide rich rendering of assistant responses including multi-file code blocks, 
 - Messages rendered with `AdvancedMarkdown` inside `ChatMessage`
 - Code snippets displayed via `CodeBlock` or `MultiTabCodeBlock`
 - Theme toggle available from `ThemeProvider`
+- Code highlighting theme controlled via `CodeThemeProvider`
 
 ## Primary Types
 
@@ -20,9 +21,10 @@ Types are defined in [`/types/markdown`](../../types/markdown).
 ## Key Dependencies and Related Modules
 
 - `react-markdown` with `remark-gfm`, `remark-math`
-- `rehype-highlight` and `rehype-sanitize` for secure output
+- `prismjs` with lazy language loading and `rehype-sanitize`
 - Components under `components/markdown`
 - Theme utilities from `components/ui`
+- Code theme controlled via `CodeThemeProvider`
 - `SecurityLayer` utility powered by `DOMPurify` for additional XSS protection
 
 ## Architecture Diagram

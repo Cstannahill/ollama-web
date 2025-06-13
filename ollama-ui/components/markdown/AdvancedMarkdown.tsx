@@ -3,7 +3,6 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
-import rehypeHighlight from "rehype-highlight";
 import rehypeSanitize from "rehype-sanitize";
 import rehypeKatex from "rehype-katex";
 import { CodeBlock } from "./CodeBlock";
@@ -20,7 +19,7 @@ export const AdvancedMarkdown = ({ content }: AdvancedMarkdownProps) => {
     <div className="prose prose-invert max-w-none">
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeHighlight, rehypeSanitize, rehypeKatex]}
+        rehypePlugins={[rehypeSanitize, rehypeKatex]}
         components={{
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           code({ node, inline, className, children, ...props }: any) {
