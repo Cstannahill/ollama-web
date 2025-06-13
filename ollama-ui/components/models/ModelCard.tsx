@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Model } from "@/types";
+import { useModelStore } from "@/stores/model-store";
 
 interface ModelCardProps {
   model: Model;
@@ -13,6 +14,7 @@ interface ModelCardProps {
 }
 
 export const ModelCard = ({ model, onSelect, isDownloaded }: ModelCardProps) => {
+  const { downloadModel, downloadProgress } = useModelStore();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -60,8 +62,18 @@ export const ModelCard = ({ model, onSelect, isDownloaded }: ModelCardProps) => 
                 <Play className="w-4 h-4 mr-1" /> Launch
               </Button>
             ) : (
-              <Button className="flex-1" onClick={() => onSelect(model)}>
-                <Download className="w-4 h-4 mr-1" /> Download
+              <Button
+                className="flex-1"
+                onClick={() => downloadModel(model.id)}
+                disabled={downloadProgress[model.id] !== undefined}
+              >
+                {downloadProgress[model.id] ? (
+                  <span>{Math.round(downloadProgress[model.id])}%</span>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-1" /> Download
+                  </>
+                )}
               </Button>
             )}
             <Button variant="outline" size="icon">
