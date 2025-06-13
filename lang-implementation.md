@@ -1,49 +1,142 @@
 # LangChain Integration Plan
 
+## Overview
+
+This document outlines how to integrate [LangChain](https://python.langchain.com/docs/get_started/introduction) into the existing Ollama web application. The goal is to augment the current *agentic chat mode* with a robust, modular pipeline that can easily grow to support additional tools, enhanced retrieval and advanced orchestration.
+
+The design described here follows the guidelines in [`AGENTS.md`](AGENTS.md) and builds on the existing architecture documented in [`docs/agentic-chat/overview.md`](docs/agentic-chat/overview.md) and [`docs/vector-store/overview.md`](docs/vector-store/overview.md).
+
 ## Current Agentic Flow
 
-The existing agentic mode is described in `docs/agentic-chat/overview.md`:
+The application already supports a basic agentic mode:
 
-- _"Enable advanced conversation capabilities with context-aware responses. When activated, the chat retrieves relevant information from the local vector database before sending messages to Ollama."_
-- Mode selection is handled in `ChatSettings` and persisted in `useChatStore`.
-- When the mode is `agentic`, `vectorStore.search` results are prepended to the conversation prior to calling the Ollama API.
-- The architecture is summarized by a sequence where `ChatStore` talks to `VectorStoreService` and then to `OllamaAPI`.
+- Mode selection is handled via the **ChatSettings** component and persisted in `useChatStore`.
+- When the mode is set to `agentic`, `vectorStore.search` results are prepended to the user messages before calling the Ollama API.
+- Retrieval uses `VectorStoreService`, which in turn operates on a browser‑side vector database (see [`BrowserVectorStore`](ollama-ui/src/lib/vector/browser-vector-store.ts)).
 
-The vector database component outlined in `docs/vector-store/overview.md` notes that it **runs entirely on the user's machine** and is initialized via `useSettingsStore`.
+This flow is summarised in the following diagram extracted from the current documentation:
+
+```mermaid
+sequenceDiagram
+    participant UI as ChatInterface
+    participant Store as ChatStore
+    participant Vector as VectorStoreService
+    participant Ollama
+    UI->>Store: sendMessage()
+    Store->>Vector: search(query)
+    Vector-->>Store: results
+    Store->>Ollama: chat(messages + results)
+    Ollama-->>Store: stream
+    Store-->>UI: update messages
+```
 
 ## Limitations
 
-- Retrieval is a single step with no orchestration of further tasks (summarization, tool use, etc.).
-- `VectorStoreService` is mostly stubbed out, leaving the agentic flow minimal.
-- Adding new behaviors would require custom wiring in `chat-store.ts` and other modules.
+- Retrieval is a single step. There is no orchestration for summarisation, tool use or multi-turn planning.
+- `VectorStoreService` is largely a stub, leaving the agentic mode minimal.
+- Adding new behaviours requires custom wiring in `chat-store.ts`, making future extensions cumbersome.
 
 ## Why LangChain?
 
-LangChain already provides primitives for retrieval‑augmented generation, tool calling, and agent execution. Our flow is linear and does not require a complex state graph, so full LangGraph state machines are unnecessary. A LangChain pipeline will allow us to compose retrieval, prompting and potential tools with minimal boilerplate.
+LangChain provides a lightweight framework for composing retrieval‑augmented generation, tool calling and agent-like behaviour. The current flow is linear, so we do not need the full LangGraph state machine. By wrapping our existing components with LangChain primitives we gain:
 
-## Proposed Restructure
+- Reusable building blocks (`RunnableSequence`, `Retriever`, `ChatModel`)
+- Simple integration with streaming responses
+- Clear entry points for future tools or custom prompts
 
-1. **Wrap Ollama in a LangChain LLM interface.**
-   - Implement an `OllamaChat` class that conforms to `BaseChatModel`.
-   - Reuse the existing `OllamaClient` connection logic described in `docs/ollama-connection/overview.md`.
-2. **Create a Retriever backed by the current vector store.**
-   - Use the local `VectorStoreService` to implement LangChain's `VectorStore` interface.
-3. **Build a `RunnableSequence` agent.**
-   - Steps: retrieve context → format prompt with messages + context → call `OllamaChat`.
-   - Additional tools (export, summarization) can be plugged in as LangChain tools in the future.
-4. **Update `useChatStore.sendMessage`.**
-   - Instead of manually performing search and looping over the Ollama response, invoke the LangChain pipeline which returns a streaming iterator.
-5. **Retain user settings.**
-   - Keep `chat-settings` and `settings-store` as the source of truth for temperature, model selection and vector database path.
+## Proposed Architecture
 
-## Benefits
+We introduce a small set of modules under `src/lib/langchain` and one service in `src/services`. These wrap existing logic in a LangChain friendly way while preserving our existing types from [`/types`](types).
 
-- Clear separation of retrieval and generation logic.
-- Easier extension with tools or multi-step chains (e.g., summarizing past conversations).
-- Reduced custom code in state stores; LangChain handles orchestration.
+```mermaid
+flowchart TD
+    subgraph LangChain Wrappers
+        A[OllamaChat \n implements BaseChatModel]
+        B[VectorStoreRetriever \n implements Retriever]
+    end
+    subgraph Services
+        C[AgentPipeline]
+    end
+    subgraph Stores
+        ChatStore
+    end
+    ChatStore -- messages --> C
+    C --> B
+    B --> VectorStoreService
+    C --> A
+    A --> OllamaClient
+```
 
-### Next Steps
+**Key Components**
 
-- Prototype the `OllamaChat` wrapper and retriever.
-- Replace direct API calls in `chat-store.ts` with the LangChain agent.
-- Document the updated architecture in `/docs/agentic-chat/overview.md` once implemented.
+- **OllamaChat** – wraps `OllamaClient.chat` as a LangChain `BaseChatModel`. It accepts `ChatRequest` parameters and yields `ChatResponse` chunks, reusing the types from [`/types/ollama`](types/ollama).
+- **VectorStoreRetriever** – adapts `VectorStoreService.search` to LangChain's `Retriever` interface, operating on `Document` and `SearchResult` types from [`/types/vector`](types/vector).
+- **AgentPipeline** – a `RunnableSequence` that performs:
+  1. Retrieve context from the vector store.
+  2. Format the prompt using conversation history (`Message` from [`/types/chat`](types/chat)).
+  3. Invoke `OllamaChat` and stream results.
+
+This arrangement keeps retrieval, prompt formatting and LLM invocation isolated so each part can be replaced or extended independently.
+
+## Integration Steps
+
+1. **Add LangChain dependencies**
+   - Install `langchain` via pnpm in `ollama-ui`.
+   - Ensure it is included in `package.json` and `pnpm-lock.yaml`.
+2. **Implement `OllamaChat`**
+   - Create `src/lib/langchain/ollama-chat.ts` that imports `OllamaClient` from `@/lib/ollama/client`.
+   - Expose an async `invoke()` method returning an async generator of `ChatResponse`.
+3. **Implement `VectorStoreRetriever`**
+   - Create `src/lib/langchain/vector-retriever.ts`.
+   - Use methods from `VectorStoreService` and types `SearchResult` and `SearchFilters`.
+4. **Build the `AgentPipeline` service**
+   - New file `src/services/agent-pipeline.ts` exports `createAgentPipeline(settings: ChatSettings)`.
+   - Compose a `RunnableSequence` that performs retrieval then passes results to `OllamaChat`.
+   - Allow injection of additional tools via LangChain `Runnable` interfaces.
+5. **Refactor `useChatStore.sendMessage`**
+   - Replace manual search and streaming loop with a call to `AgentPipeline`.
+   - Messages remain stored as `Message` objects and displayed via `ChatMessage` component.
+6. **Update Documentation**
+   - Document the new architecture in `docs/agentic-chat/overview.md` with updated diagrams.
+   - Reference the LangChain modules and how they map to existing types.
+7. **Provide Extension Points**
+   - Future tools (e.g. summarise, export or call external APIs) can be added by composing new `Runnable` steps before or after `OllamaChat`.
+
+## High-Level Flow with LangChain
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as ChatInterface
+    participant Store as ChatStore
+    participant Pipeline as AgentPipeline
+    participant Retriever as VectorStoreRetriever
+    participant LLM as OllamaChat
+    User->>UI: enters message
+    UI->>Store: sendMessage(text)
+    Store->>Pipeline: run(messages)
+    Pipeline->>Retriever: retrieve(query)
+    Retriever-->>Pipeline: docs
+    Pipeline->>LLM: invoke(history + docs)
+    LLM-->>Pipeline: stream
+    Pipeline-->>Store: deliver chunks
+    Store-->>UI: update messages
+```
+
+## Advantages of This Design
+
+- **Modularity** – each piece (retrieval, formatting, LLM call) lives in its own module. Stores simply orchestrate.
+- **Extensibility** – new tools can plug into the pipeline without touching UI code.
+- **Testability** – each module can be unit tested in isolation. Existing tests around markdown rendering and security remain unaffected.
+- **Type Safety** – the pipeline uses the central types defined under `/types`, ensuring consistent data across the app.
+
+## Implementation Checklist
+
+1. Add LangChain dependency and verify build.
+2. Implement `OllamaChat` and `VectorStoreRetriever`.
+3. Create `AgentPipeline` service and export a helper for streaming results.
+4. Refactor `useChatStore` to use the pipeline.
+5. Update relevant documentation and diagrams.
+6. Run `pnpm build` and `pnpm test` to ensure the app compiles and tests pass.
+
+Following this plan will let us gradually introduce LangChain while keeping the existing codebase stable. Each step is isolated and reversible, making the overall system more robust and easier to extend in future.
