@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Search, Braces, FileCode, Hash, Database, Terminal, Palette } from "lucide-react";
 
 const getLanguageIcon = (lang: string) => {
@@ -14,18 +14,47 @@ const getLanguageIcon = (lang: string) => {
   return icons[lang] || <FileCode className="w-3 h-3" />;
 };
 import { CodeBlock } from "./CodeBlock";
+import { parseCodeBlocks } from "./parseCodeBlocks";
 import type { CodeBlock as Block } from "@/types";
 
 interface MultiTabCodeBlockProps {
-  blocks: Block[];
+  markdown: string;
 }
 
-export const MultiTabCodeBlock = ({ blocks }: MultiTabCodeBlockProps) => {
+const hashString = (input: string) => {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = (hash << 5) - hash + input.charCodeAt(i);
+    hash |= 0;
+  }
+  return hash.toString();
+};
+
+export const MultiTabCodeBlock = ({ markdown }: MultiTabCodeBlockProps) => {
+  const blocks = useMemo<Block[]>(() => parseCodeBlocks(markdown), [markdown]);
   const [active, setActive] = useState(0);
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const current = blocks[active];
   const tabRefs = useRef<HTMLButtonElement[]>([]);
+  const storageKey = useMemo(
+    () => `mtcb-${hashString(blocks.map((b) => b.filename || "").join("|"))}`,
+    [blocks]
+  );
+
+  useEffect(() => {
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      const idx = parseInt(stored, 10);
+      if (!isNaN(idx) && idx < blocks.length) {
+        setActive(idx);
+      }
+    }
+  }, [storageKey, blocks.length]);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, active.toString());
+  }, [active, storageKey]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
