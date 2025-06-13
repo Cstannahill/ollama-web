@@ -39,6 +39,18 @@ This file defines mandatory protocols for all agents (AI or human) contributing 
 
 ---
 
+## Tooling & Build Requirements
+
+- **Package Manager:**  
+  - This repository uses [pnpm](https://pnpm.io/) as the exclusive package manager.
+  - **All agents must use `pnpm` for all install, update, and script commands.**
+  - Do not use `npm` or `yarn`—dependencies or lockfiles from other managers will not be accepted.
+- **Build Check Before Pull Request:**  
+  - **The application MUST successfully build (`pnpm build` or relevant command) before submitting a pull request.**
+  - Do not submit PRs with unresolved type errors, linter errors, or any code that fails to build.
+  - If you encounter build issues, resolve them fully prior to requesting review.
+
+---
 ## Checklist Process
 
 - **Checklist Location:** All task checklists and completion tracking are kept in `checklist.md`.
