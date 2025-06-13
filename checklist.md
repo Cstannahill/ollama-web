@@ -2,7 +2,7 @@
 
 ### Phase 1: Foundation (Weeks 1-4)
 
-- [ ] Project setup and configuration
+ - [x] Project setup and configuration
 - [ ] Ollama connection service
 - [ ] Basic model browsing UI
 - [ ] Simple chat interface
