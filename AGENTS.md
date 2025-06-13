@@ -39,6 +39,35 @@ This file defines mandatory protocols for all agents (AI or human) contributing 
 
 ---
 
+## Component Architecture & Structure
+
+- **Isolated/Standalone Components:**  
+  - **All UI logic, views, and reusable behaviors must be built as isolated, standalone components wherever possible.**
+  - Avoid monolithic components or tightly coupled logic.  
+  - Prefer pure, stateless, and prop-driven components unless local state is required.
+- **Page Files are Orchestrators:**  
+  - Page files (e.g., in `app/`) should act primarily as *orchestrators*—they should import and compose components, not contain substantial UI or business logic directly.
+  - Pages must remain as lean as possible.
+- **Component Decomposition:**  
+  - **Large components must be broken down into smaller, logical, manageable subcomponents.**
+  - These subcomponents must be grouped under a dedicated directory within `components/` that reflects the parent feature or domain.
+    - _Example:_  
+      ```
+      components/
+      └─ chat/
+         ├─ ChatInterface.tsx
+         ├─ ChatMessage.tsx
+         ├─ ChatInput.tsx
+         ├─ ChatHeader.tsx
+         └─ index.ts // Barrel file for chat components
+      ```
+    - **Every feature/component group must have its own subdirectory.**
+    - Use an `index.ts` barrel file within each group for clean imports.
+- **Composition > Inheritance:**  
+  - Always prefer composing components together over creating deep inheritance trees.
+
+---
+
 ## Tooling & Build Requirements
 
 - **Package Manager:**  
@@ -51,6 +80,7 @@ This file defines mandatory protocols for all agents (AI or human) contributing 
   - If you encounter build issues, resolve them fully prior to requesting review.
 
 ---
+
 ## Checklist Process
 
 - **Checklist Location:** All task checklists and completion tracking are kept in `checklist.md`.
