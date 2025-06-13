@@ -16,8 +16,19 @@ export function parseCodeBlocks(markdown: string): CodeBlock[] {
   const regex = /```([^\n]*)\n([\s\S]*?)```/g;
   let match: RegExpExecArray | null;
   while ((match = regex.exec(markdown))) {
-    const info = match[1].trim();
+    let info = match[1].trim();
     const code = match[2].replace(/\n$/, "");
+    const highlightRaw = info.match(/\{[^}]*highlight:\s*\[([^\]]+)\][^}]*\}/)?.[1];
+    const highlight = highlightRaw
+      ? highlightRaw.split(/\s*,\s*/).flatMap((p) => {
+          if (p.includes("-")) {
+            const [s, e] = p.split("-").map(Number);
+            return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+          }
+          return [Number(p)];
+        })
+      : undefined;
+    info = info.replace(/\{[^}]*\}/, "").trim();
     let language = "";
     let filename: string | undefined;
 
@@ -43,7 +54,7 @@ export function parseCodeBlocks(markdown: string): CodeBlock[] {
 
     language = extToLang[language] || language;
 
-    blocks.push({ code, language, filename });
+    blocks.push({ code, language, filename, highlight });
   }
   return blocks;
 }

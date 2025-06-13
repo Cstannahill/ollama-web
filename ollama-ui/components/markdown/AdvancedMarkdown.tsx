@@ -3,6 +3,7 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
+import remarkFootnotes from "remark-footnotes";
 import rehypeSanitize from "rehype-sanitize";
 import rehypeKatex from "rehype-katex";
 import { CodeBlock } from "./CodeBlock";
@@ -15,11 +16,18 @@ interface AdvancedMarkdownProps {
 
 export const AdvancedMarkdown = ({ content }: AdvancedMarkdownProps) => {
   const sanitized = SecurityLayer.sanitize(content);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rehypePlugins: any[] = [rehypeSanitize, rehypeKatex];
+  if (typeof window !== "undefined") {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+    const mermaid = require("rehype-mermaid").default;
+    rehypePlugins.push(mermaid);
+  }
   return (
     <div className="prose prose-invert max-w-none">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeSanitize, rehypeKatex]}
+        remarkPlugins={[remarkGfm, remarkMath, remarkFootnotes]}
+        rehypePlugins={rehypePlugins}
         components={{
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           code({ node, inline, className, children, ...props }: any) {
@@ -27,6 +35,16 @@ export const AdvancedMarkdown = ({ content }: AdvancedMarkdownProps) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const meta = (node as any).data?.meta as string | undefined;
           const filename = meta?.match(/filename=(\S+)/)?.[1];
+          const highlightRaw = meta?.match(/\{\s*highlight:\s*\[([^\]]+)\]/)?.[1];
+          const highlight = highlightRaw
+            ? highlightRaw.split(/\s*,\s*/).flatMap((p) => {
+                if (p.includes("-")) {
+                  const [s, e] = p.split("-").map(Number);
+                  return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+                }
+                return [Number(p)];
+              })
+            : [];
           const code = String(children).replace(/\n$/, "");
           if (inline) {
             return (
@@ -36,7 +54,12 @@ export const AdvancedMarkdown = ({ content }: AdvancedMarkdownProps) => {
             );
           }
           return (
-            <CodeBlock code={code} language={match?.[1] || ""} filename={filename} />
+            <CodeBlock
+              code={code}
+              language={match?.[1] || ""}
+              filename={filename}
+              highlight={highlight}
+            />
           );
         },
         blockquote({ children }) {

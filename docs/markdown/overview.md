@@ -11,17 +11,18 @@ Provide rich rendering of assistant responses including multi-file code blocks, 
 - Theme toggle available from `ThemeProvider`
 - Code highlighting theme controlled via `CodeThemeProvider`
 
-## Primary Types
+-## Primary Types
 
-- `CodeBlock` – defines language, source and optional filename
+- `CodeBlock` – defines language, source, optional filename and line highlights
 - `ExportFormat` – supported export types
 
 Types are defined in [`/types/markdown`](../../types/markdown).
 
 ## Key Dependencies and Related Modules
 
-- `react-markdown` with `remark-gfm`, `remark-math`
+- `react-markdown` with `remark-gfm`, `remark-math`, `remark-footnotes`
 - `prismjs` with lazy language loading and `rehype-sanitize`
+- `rehype-mermaid` for diagram rendering
 - Components under `components/markdown`
 - Theme utilities from `components/ui`
 - Code theme controlled via `CodeThemeProvider`
@@ -44,6 +45,21 @@ Assistant responses should leverage these features whenever possible:
 - Use **code tabs** when presenting multi-file or multi-language examples.
 - Highlight important information with **callout blocks**.
 - Wrap long explanations within **collapsible sections**.
+- Reference sources with **footnotes**.[^1]
+- Emphasize key lines in code using `{highlight: [n]}` metadata.
+
+Example:
+
+```markdown
+Here is a note.[^note]
+
+```ts {highlight: [2]}
+function add(a: number, b: number) {
+  return a + b;
+}
+```
+
+[^note]: This footnote renders at the bottom of the message.
 
 ## Maintaining Documentation
 

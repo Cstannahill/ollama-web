@@ -19,7 +19,7 @@ interface CodeBlockProps extends Block {
   onSearchChange?: (value: string) => void;
 }
 
-export const CodeBlock = ({ code, language, filename, search: externalSearch = "", onSearchChange }: CodeBlockProps) => {
+export const CodeBlock = ({ code, language, filename, highlight = [], search: externalSearch = "", onSearchChange }: CodeBlockProps) => {
   const [copied, setCopied] = useState(false);
   const [showNumbers, setShowNumbers] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
@@ -171,9 +171,12 @@ export const CodeBlock = ({ code, language, filename, search: externalSearch = "
           placeholder="Search..."
         />
         <pre className="relative overflow-x-auto">
-          <code className={`language-${language} block`}> 
+          <code className={`language-${language} block`}>
             {lines.map((line, i) => (
-              <div key={i} className="whitespace-pre">
+              <div
+                key={i}
+                className={`whitespace-pre ${highlight.includes(i + 1) ? "bg-yellow-900/40" : ""}`}
+              >
                 {showNumbers && (
                   <span className="select-none text-gray-500 mr-3">{i + 1}</span>
                 )}
