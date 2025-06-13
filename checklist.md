@@ -11,6 +11,7 @@
 
 - [x] Model download manager
 - [x] Enhanced chat UI with markdown
+- [ ] Advanced Markdown integration
 - [ ] Settings and preferences
 - [ ] Export functionality
 
@@ -19,6 +20,7 @@
 - [ ] Vector database integration
 - [ ] Agentic chat mode
 - [ ] Advanced search and filtering
+- [ ] LLM prompt tuning for markdown usage
 - [ ] Performance optimizations
 
 ### Phase 4: Polish & Launch (Weeks 13-16)
@@ -35,3 +37,7 @@
 - Plugin system for extensions
 - Collaborative features
 - Mobile applications
+
+### Verification Steps
+
+- [ ] Confirm all new features are documented under `docs/markdown`
