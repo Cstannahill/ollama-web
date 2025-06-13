@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Check, Copy, Code2, FileText, Maximize2, Download, Search, Sparkles, ChevronRight, ChevronDown, Terminal, Braces, Hash, FileCode, Database, Layers, Palette } from 'lucide-react';
+import { Check, Copy, Code2, FileText, Maximize2, Download, Search, Sparkles, ChevronRight, ChevronDown, Terminal, Braces, Hash, FileCode, Database, Layers, Palette, Play, Pencil } from 'lucide-react';
 
 // Simulated syntax highlighting (in production, use Prism.js)
 const highlightCode = (code, language) => {
@@ -51,6 +51,9 @@ const getLanguageIcon = (lang) => {
 const CodeBlock = ({ code, language, filename, isActive, onCopy }) => {
   const [copied, setCopied] = useState(false);
   const [showLineNumbers, setShowLineNumbers] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [codeText, setCodeText] = useState(code);
+  const [output, setOutput] = useState('');
   
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -59,9 +62,23 @@ const CodeBlock = ({ code, language, filename, isActive, onCopy }) => {
     setTimeout(() => setCopied(false), 2000);
   };
   
-  const lines = code.trim().split('\n');
-  const highlightedCode = useMemo(() => highlightCode(code, language), [code, language]);
+  const lines = codeText.trim().split('\n');
+  const highlightedCode = useMemo(() => highlightCode(codeText, language), [codeText, language]);
   const highlightedLines = highlightedCode.split('\n');
+
+  const handleRun = () => {
+    try {
+      if (language === 'javascript') {
+        // eslint-disable-next-line no-eval
+        const result = eval(codeText);
+        setOutput(String(result));
+      } else {
+        setOutput('python execution not implemented');
+      }
+    } catch (e) {
+      setOutput('Error: ' + e.message);
+    }
+  };
   
   return (
     <div className={`code-block ${isActive ? 'active' : 'hidden'}`}>
@@ -71,14 +88,14 @@ const CodeBlock = ({ code, language, filename, isActive, onCopy }) => {
           <span>{language}</span>
         </div>
         <div className="code-actions">
-          <button 
+          <button
             className="action-btn"
             onClick={() => setShowLineNumbers(!showLineNumbers)}
             title="Toggle line numbers"
           >
             <Hash className="w-4 h-4" />
           </button>
-          <button 
+          <button
             className="action-btn"
             onClick={handleCopy}
             title="Copy code"
@@ -89,27 +106,42 @@ const CodeBlock = ({ code, language, filename, isActive, onCopy }) => {
               <Copy className="w-4 h-4" />
             )}
           </button>
+          <button className="action-btn" onClick={handleRun} title="Run code">
+            <Play className="w-4 h-4" />
+          </button>
+          <button className="action-btn" onClick={() => setEditing(!editing)} title="Edit code">
+            <Pencil className="w-4 h-4" />
+          </button>
           <button className="action-btn" title="Fullscreen">
             <Maximize2 className="w-4 h-4" />
           </button>
         </div>
       </div>
       <div className="code-content">
-        <pre>
-          <code>
-            {highlightedLines.map((line, i) => (
-              <div key={i} className="code-line">
-                {showLineNumbers && (
-                  <span className="line-number">{i + 1}</span>
-                )}
-                <span 
-                  className="line-content" 
-                  dangerouslySetInnerHTML={{ __html: line || '&nbsp;' }}
-                />
-              </div>
-            ))}
-          </code>
-        </pre>
+        {editing ? (
+          <textarea
+            value={codeText}
+            onChange={(e) => setCodeText(e.target.value)}
+            className="w-full h-40 bg-gray-800 text-white p-2 font-mono"
+          />
+        ) : (
+          <pre>
+            <code>
+              {highlightedLines.map((line, i) => (
+                <div key={i} className="code-line">
+                  {showLineNumbers && (
+                    <span className="line-number">{i + 1}</span>
+                  )}
+                  <span
+                    className="line-content"
+                    dangerouslySetInnerHTML={{ __html: line || '&nbsp;' }}
+                  />
+                </div>
+              ))}
+            </code>
+          </pre>
+        )}
+        {output && <pre className="mt-2 text-sm">{output}</pre>}
       </div>
     </div>
   );
