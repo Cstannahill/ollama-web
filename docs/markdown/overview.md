@@ -46,9 +46,12 @@ flowchart TD
 
 Assistant responses should leverage these features whenever possible:
 
-- Use **code tabs** when presenting multi-file or multi-language examples.
+- Use **code tabs** when presenting multi-file or multi-language examples. Place
+  consecutive fenced blocks between `---` lines and the renderer will combine
+  them into a `MultiTabCodeBlock`.
 - Highlight important information with **callout blocks**.
-- Wrap long explanations within **collapsible sections**.
+- Wrap long explanations within **collapsible sections** using the standard
+  `<details>` element with a `<summary>` title.
 - Reference sources with **footnotes**.[^1]
 - Emphasize key lines in code using `{highlight: [n]}` metadata.
 
@@ -62,6 +65,21 @@ function add(a: number, b: number) {
   return a + b;
 }
 ```
+
+---
+
+```ts utils.ts
+export function sub(a: number, b: number) {
+  return a - b;
+}
+```
+
+<details>
+<summary>More info</summary>
+
+This section can be toggled.
+
+</details>
 
 [^note]: This footnote renders at the bottom of the message.
 

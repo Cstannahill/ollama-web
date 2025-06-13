@@ -13,7 +13,7 @@ For recommended system prompts that produce advanced markdown features, see [doc
 
 - [x] Model download manager
 - [x] Enhanced chat UI with markdown
-- [ ] Advanced Markdown integration
+- [x] Advanced Markdown integration
 - [ ] Settings and preferences
 - [ ] Export functionality
 
