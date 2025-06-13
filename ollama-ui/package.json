@@ -26,6 +26,7 @@
     "react-hook-form": "^7.57.0",
     "react-markdown": "^10.1.0",
     "rehype-highlight": "^7.0.2",
+    "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.1",
     "tiktoken": "^1.0.21",
     "zod": "^3.25.64",
