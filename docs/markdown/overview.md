@@ -23,6 +23,7 @@ Types are defined in [`/types/markdown`](../../types/markdown).
 - `rehype-highlight` and `rehype-sanitize` for secure output
 - Components under `components/markdown`
 - Theme utilities from `components/ui`
+- `SecurityLayer` utility powered by `DOMPurify` for additional XSS protection
 
 ## Architecture Diagram
 
