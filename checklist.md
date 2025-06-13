@@ -4,7 +4,7 @@
 
 - [x] Project setup and configuration
 - [x] Ollama connection service
-- [ ] Basic model browsing UI
+- [x] Basic model browsing UI
 - [ ] Simple chat interface
 
 ### Phase 2: Core Features (Weeks 5-8)
