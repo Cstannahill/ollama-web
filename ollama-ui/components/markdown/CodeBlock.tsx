@@ -1,17 +1,25 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { Copy, Check, Download, Maximize2, X, Hash, Search } from "lucide-react";
 import { createPortal } from "react-dom";
 import type { CodeBlock as Block, ExportFormat } from "@/types";
 
-type CodeBlockProps = Block;
+interface CodeBlockProps extends Block {
+  search?: string;
+  onSearchChange?: (value: string) => void;
+}
 
-export const CodeBlock = ({ code, language, filename }: CodeBlockProps) => {
+export const CodeBlock = ({ code, language, filename, search: externalSearch = "", onSearchChange }: CodeBlockProps) => {
   const [copied, setCopied] = useState(false);
   const [showNumbers, setShowNumbers] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(externalSearch);
   const [filtered, setFiltered] = useState<string[]>([]);
+  const id = useId();
+
+  useEffect(() => {
+    setSearch(externalSearch);
+  }, [externalSearch]);
 
   useEffect(() => {
     const lines = code.trimEnd().split("\n");
@@ -87,7 +95,7 @@ export const CodeBlock = ({ code, language, filename }: CodeBlockProps) => {
             type="button"
             aria-label="Search code"
             onClick={() => {
-              const el = document.getElementById("code-search");
+              const el = document.getElementById(`code-search-${id}`);
               el?.focus();
             }}
             className="text-gray-400 hover:text-white"
@@ -124,10 +132,13 @@ export const CodeBlock = ({ code, language, filename }: CodeBlockProps) => {
       </div>
       <div className="px-3 pb-2">
         <input
-          id="code-search"
+          id={`code-search-${id}`}
           aria-label="Search in code"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            onSearchChange?.(e.target.value);
+          }}
           className="mb-2 w-full rounded bg-gray-800 px-2 py-1 text-xs outline-none"
           placeholder="Search..."
         />
