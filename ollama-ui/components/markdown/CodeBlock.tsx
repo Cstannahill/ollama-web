@@ -1,5 +1,15 @@
 "use client";
 import { useState, useEffect, useId } from "react";
+import Prism from "prismjs";
+
+const loadLanguage = async (lang: string) => {
+  if (!lang || Prism.languages[lang]) return;
+  try {
+    await import(`prismjs/components/prism-${lang}.js`);
+  } catch {
+    // ignore missing language
+  }
+};
 import { Copy, Check, Download, Maximize2, X, Hash, Search } from "lucide-react";
 import { createPortal } from "react-dom";
 import type { CodeBlock as Block, ExportFormat } from "@/types";
@@ -14,6 +24,7 @@ export const CodeBlock = ({ code, language, filename, search: externalSearch = "
   const [showNumbers, setShowNumbers] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
   const [search, setSearch] = useState(externalSearch);
+  const [highlighted, setHighlighted] = useState<string[]>([]);
   const [filtered, setFiltered] = useState<string[]>([]);
   const id = useId();
 
@@ -22,20 +33,37 @@ export const CodeBlock = ({ code, language, filename, search: externalSearch = "
   }, [externalSearch]);
 
   useEffect(() => {
-    const lines = code.trimEnd().split("\n");
+    let cancelled = false;
+    (async () => {
+      await loadLanguage(language);
+      const html = Prism.highlight(
+        code,
+        Prism.languages[language] || Prism.languages.plain,
+        language
+      );
+      if (!cancelled) {
+        setHighlighted(html.trimEnd().split("\n"));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [code, language]);
+
+  useEffect(() => {
     if (!search) {
-      setFiltered(lines);
+      setFiltered(highlighted);
       return;
     }
     const q = search.toLowerCase();
     setFiltered(
-      lines.map((l) =>
+      highlighted.map((l) =>
         l.toLowerCase().includes(q)
-          ? l.replace(new RegExp(q, "gi"), (m) => `<mark>${m}</mark>`) 
+          ? l.replace(new RegExp(q, "gi"), (m) => `<mark>${m}</mark>`)
           : l
       )
     );
-  }, [search, code]);
+  }, [search, highlighted]);
 
   const handleCopy = async () => {
     try {
