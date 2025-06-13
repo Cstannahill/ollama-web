@@ -1,5 +1,7 @@
 # Ollama Desktop App Development Checklist
 
+For recommended system prompts that produce advanced markdown features, see [docs/markdown/prompt-guidelines.md](docs/markdown/prompt-guidelines.md).
+
 ### Phase 1: Foundation (Weeks 1-4)
 
 - [x] Project setup and configuration
