@@ -15,7 +15,7 @@ For recommended system prompts that produce advanced markdown features, see [doc
 - [x] Enhanced chat UI with markdown
 - [x] Advanced Markdown integration
 - [x] Settings and preferences
-- [ ] Export functionality
+- [x] Export functionality
 
 ### Phase 3: Advanced Features (Weeks 9-12)
 
