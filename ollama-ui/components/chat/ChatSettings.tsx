@@ -2,10 +2,12 @@
 import { Settings as SettingsIcon } from "lucide-react";
 import { useState } from "react";
 import { useSettingsStore } from "@/stores/settings-store";
+import { useChatStore } from "@/stores/chat-store";
 import { Button } from "@/components/ui/button";
 
 export const ChatSettings = () => {
   const { chatSettings, updateChatSettings } = useSettingsStore();
+  const { mode, setMode } = useChatStore();
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
@@ -29,6 +31,17 @@ export const ChatSettings = () => {
             }
             className="w-full"
           />
+          <div className="mt-4 space-y-2">
+            <label className="block text-sm font-medium">Mode</label>
+            <select
+              value={mode}
+              onChange={(e) => setMode(e.target.value as "simple" | "agentic")}
+              className="border p-1 rounded w-full"
+            >
+              <option value="simple">simple</option>
+              <option value="agentic">agentic</option>
+            </select>
+          </div>
         </div>
       )}
     </div>

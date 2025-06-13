@@ -3,11 +3,11 @@ import { useEffect, useRef } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { useChatStore } from "@/stores/chat-store";
-import { ThemeToggle } from "@/components/ui";
+import { ThemeToggle, Badge } from "@/components/ui";
 import { ExportMenu } from "./ExportMenu";
 
 export const ChatInterface = () => {
-  const { messages, isStreaming, sendMessage } = useChatStore();
+  const { messages, isStreaming, sendMessage, mode } = useChatStore();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -17,7 +17,10 @@ export const ChatInterface = () => {
   return (
     <div className="flex flex-col h-screen">
       <div className="p-2 border-b flex justify-between items-center">
-        <ExportMenu />
+        <div className="flex items-center gap-2">
+          <ExportMenu />
+          <Badge>{mode} mode</Badge>
+        </div>
         <ThemeToggle />
       </div>
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
