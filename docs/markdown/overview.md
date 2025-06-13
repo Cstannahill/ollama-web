@@ -12,6 +12,8 @@ Provide rich rendering of assistant responses including multi-file code blocks, 
 - Code highlighting theme controlled via `CodeThemeProvider`
 - Code blocks can be run inline for JavaScript and Python
 - Snippets are editable via a Monaco editor with auto-save
+- Export the full markdown as **PDF**, **HTML**, or **Markdown**
+- Generate shareable links via the **Share** button
 
 -## Primary Types
 

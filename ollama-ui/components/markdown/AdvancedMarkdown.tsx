@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -9,12 +9,21 @@ import rehypeKatex from "rehype-katex";
 import { CodeBlock } from "./CodeBlock";
 import { Callout } from "./Callout";
 import { SecurityLayer } from "@/lib/securityLayer";
+import { exportMarkdown, createShareLink } from "@/lib/exportMarkdown";
+import { Download, Share2 } from "lucide-react";
 
 interface AdvancedMarkdownProps {
   content: string;
+  showExport?: boolean;
+  showShare?: boolean;
 }
 
-export const AdvancedMarkdown = ({ content }: AdvancedMarkdownProps) => {
+export const AdvancedMarkdown = ({
+  content,
+  showExport = false,
+  showShare = false,
+}: AdvancedMarkdownProps) => {
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
   const sanitized = SecurityLayer.sanitize(content);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rehypePlugins: any[] = [rehypeSanitize, rehypeKatex];
@@ -24,7 +33,55 @@ export const AdvancedMarkdown = ({ content }: AdvancedMarkdownProps) => {
     rehypePlugins.push(mermaid);
   }
   return (
-    <div className="prose prose-invert max-w-none">
+    <div className="prose prose-invert max-w-none relative">
+      {(showExport || showShare) && (
+        <div className="absolute right-0 top-0 flex gap-2">
+          {showExport && (
+            <>
+              <button
+                type="button"
+                aria-label="Export as Markdown"
+                onClick={() => exportMarkdown(content, "markdown")}
+                className="p-1 text-gray-400 hover:text-white"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Export as HTML"
+                onClick={() => exportMarkdown(content, "html")}
+                className="p-1 text-gray-400 hover:text-white"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Export as PDF"
+                onClick={() => exportMarkdown(content, "pdf")}
+                className="p-1 text-gray-400 hover:text-white"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+            </>
+          )}
+          {showShare && (
+            <button
+              type="button"
+              aria-label="Share"
+              onClick={async () => {
+                const url = await createShareLink(content);
+                setShareUrl(url);
+                await navigator.clipboard.writeText(url);
+                // eslint-disable-next-line no-alert
+                alert("Share link copied to clipboard");
+              }}
+              className="p-1 text-gray-400 hover:text-white"
+            >
+              <Share2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      )}
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath, remarkFootnotes]}
         rehypePlugins={rehypePlugins}
@@ -84,6 +141,9 @@ export const AdvancedMarkdown = ({ content }: AdvancedMarkdownProps) => {
       >
         {sanitized}
       </ReactMarkdown>
+      {shareUrl && (
+        <p className="mt-2 text-xs break-all">Shared: {shareUrl}</p>
+      )}
     </div>
   );
 };
