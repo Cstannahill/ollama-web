@@ -33,3 +33,15 @@ flowchart TD
     AdvancedMarkdown --> Callout
     AdvancedMarkdown --> CollapsibleSection
 ```
+
+## Usage Guidelines
+
+Assistant responses should leverage these features whenever possible:
+
+- Use **code tabs** when presenting multi-file or multi-language examples.
+- Highlight important information with **callout blocks**.
+- Wrap long explanations within **collapsible sections**.
+
+## Maintaining Documentation
+
+Keep this documentation updated as new markdown capabilities are added in `components/markdown`.

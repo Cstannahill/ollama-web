@@ -63,8 +63,17 @@ This file defines mandatory protocols for all agents (AI or human) contributing 
       ```
     - **Every feature/component group must have its own subdirectory.**
     - Use an `index.ts` barrel file within each group for clean imports.
-- **Composition > Inheritance:**  
-  - Always prefer composing components together over creating deep inheritance trees.
+  - **Composition > Inheritance:**
+    - Always prefer composing components together over creating deep inheritance trees.
+
+---
+
+## Advanced Markdown Component
+
+- **Location:** `components/markdown` contains `AdvancedMarkdown` and its helpers.
+- **Core Features:** multi-tab code blocks, callout blocks, and collapsible sections.
+- **Assistant Responses:** All assistant replies must use these elements when presenting information or code.
+- **Documentation Maintenance:** Update `docs/markdown` whenever new markdown features are introduced.
 
 ---
 
