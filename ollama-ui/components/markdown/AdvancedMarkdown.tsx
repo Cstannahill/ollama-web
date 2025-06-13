@@ -8,12 +8,14 @@ import rehypeSanitize from "rehype-sanitize";
 import rehypeKatex from "rehype-katex";
 import { CodeBlock } from "./CodeBlock";
 import { Callout } from "./Callout";
+import { SecurityLayer } from "@/lib/securityLayer";
 
 interface AdvancedMarkdownProps {
   content: string;
 }
 
 export const AdvancedMarkdown = ({ content }: AdvancedMarkdownProps) => {
+  const sanitized = SecurityLayer.sanitize(content);
   return (
     <div className="prose prose-invert max-w-none">
       <ReactMarkdown
@@ -58,7 +60,7 @@ export const AdvancedMarkdown = ({ content }: AdvancedMarkdownProps) => {
         },
       }}
       >
-        {content}
+        {sanitized}
       </ReactMarkdown>
     </div>
   );
