@@ -10,6 +10,8 @@ Provide rich rendering of assistant responses including multi-file code blocks, 
 - Code snippets displayed via `CodeBlock` or `MultiTabCodeBlock`
 - Theme toggle available from `ThemeProvider`
 - Code highlighting theme controlled via `CodeThemeProvider`
+- Code blocks can be run inline for JavaScript and Python
+- Snippets are editable via a Monaco editor with auto-save
 
 -## Primary Types
 
