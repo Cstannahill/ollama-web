@@ -1,10 +1,14 @@
-import { OllamaClient } from "@/lib/ollama/client";
 import { ModelCard } from "@/components/models/ModelCard";
 import type { Model } from "@/types";
 
 async function getModels(): Promise<Model[]> {
-  const client = new OllamaClient({ baseUrl: process.env.OLLAMA_BASE_URL || "http://localhost:11434" });
-  return client.listModels();
+  try {
+    const res = await fetch(`${process.env.OLLAMA_BASE_URL || "http://localhost:11434"}/api/tags`);
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
 }
 
 export default async function Page() {

@@ -5,7 +5,7 @@ import type {
   Model,
   OllamaConfig,
   PullProgress,
-} from "../../../types";
+} from "@/types";
 
 export class OllamaClient extends EventEmitter {
   private ws: WebSocket | null = null;
