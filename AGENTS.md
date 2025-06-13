@@ -31,10 +31,11 @@ This file defines mandatory protocols for all agents (AI or human) contributing 
   - Include **detailed architectural sketches, diagrams, and type maps** for the feature within its documentation directory.
   - Visuals should cover both high-level flow (e.g., sequence, data, or interaction diagrams) and detailed type/interface relationships.
   - Diagrams must be updated as the architecture evolves.
-- **Cross-Linking:**  
+- **Cross-Linking:**
   - Reference all relevant types (from `/types`) and routes/components (from code) so new contributors can easily map the documentation to the implementation.
-- **Documentation Is Continuous:**  
-  - Documentation must be updated as features are built, not after.  
+  - For guidance on system prompts that generate advanced markdown (callouts, multi-tab code blocks, diagrams), see [docs/markdown/prompt-guidelines.md](docs/markdown/prompt-guidelines.md).
+- **Documentation Is Continuous:**
+  - Documentation must be updated as features are built, not after.
   - PRs for major features must include documentation updates.
 
 ---
