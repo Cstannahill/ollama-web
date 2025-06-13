@@ -17,6 +17,28 @@ This file defines mandatory protocols for all agents (AI or human) contributing 
 
 ---
 
+## Feature Documentation Standards
+
+- **Directory Structure:**  
+  - Every major feature must have its own directory under `/docs` (e.g., `docs/chat`, `docs/model`, etc.).
+- **Overview File:**  
+  - Each feature directory must include an `overview.md` file summarizing:
+    - **Feature purpose and scope**
+    - **Core flows and UI touchpoints**
+    - **Primary types/interfaces (with references to the relevant `/types` files)**
+    - **Key dependencies and related modules**
+- **Architecture & Visuals:**  
+  - Include **detailed architectural sketches, diagrams, and type maps** for the feature within its documentation directory.
+  - Visuals should cover both high-level flow (e.g., sequence, data, or interaction diagrams) and detailed type/interface relationships.
+  - Diagrams must be updated as the architecture evolves.
+- **Cross-Linking:**  
+  - Reference all relevant types (from `/types`) and routes/components (from code) so new contributors can easily map the documentation to the implementation.
+- **Documentation Is Continuous:**  
+  - Documentation must be updated as features are built, not after.  
+  - PRs for major features must include documentation updates.
+
+---
+
 ## Checklist Process
 
 - **Checklist Location:** All task checklists and completion tracking are kept in `checklist.md`.
