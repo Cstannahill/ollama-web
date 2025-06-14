@@ -10,6 +10,7 @@ import type {
 export class OllamaClient extends EventEmitter {
   private ws: WebSocket | null = null;
   private reconnectTimer: NodeJS.Timeout | null = null;
+  private retries = 0;
 
   constructor(private config: OllamaConfig) {
     super();
@@ -27,16 +28,22 @@ export class OllamaClient extends EventEmitter {
 
   private setupEventHandlers() {
     if (!this.ws) return;
-    this.ws.onopen = () => this.emit("connected");
+    this.ws.onopen = () => {
+      this.retries = 0;
+      this.emit("connected");
+    };
     this.ws.onclose = () => this.scheduleReconnect();
     this.ws.onerror = (e) => this.handleConnectionError(e);
   }
 
   private scheduleReconnect() {
     if (this.reconnectTimer) return;
-    const delay = this.config.timeout ?? 3000;
+    const base = this.config.timeout ?? 3000;
+    const delay = Math.min(base * 2 ** this.retries, 30_000);
+    this.retries++;
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
+      this.retries = 0;
       this.connect();
     }, delay);
   }

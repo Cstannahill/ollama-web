@@ -51,10 +51,6 @@ export class EmbeddingService {
   }
 
   async generateEmbeddings(texts: string[], model: string): Promise<Embedding[]> {
-    const embeddings: Embedding[] = [];
-    for (const t of texts) {
-      embeddings.push(await this.generateEmbedding(t, model));
-    }
-    return embeddings;
+    return Promise.all(texts.map((t) => this.generateEmbedding(t, model)));
   }
 }
