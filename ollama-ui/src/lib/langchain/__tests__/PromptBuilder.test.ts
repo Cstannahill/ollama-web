@@ -7,4 +7,10 @@ describe('PromptBuilder', () => {
     const prompt = pb.build([{ id: '1', role: 'user', content: 'hi' }]);
     expect(prompt.startsWith('sys')).toBe(true);
   });
+
+  it('includes instructions', () => {
+    const pb = new PromptBuilder({ instructions: ['one', 'two'] });
+    const prompt = pb.build([{ id: '1', role: 'user', content: 'hi' }]);
+    expect(prompt.startsWith('one\ntwo')).toBe(true);
+  });
 });

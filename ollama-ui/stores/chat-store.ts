@@ -4,6 +4,7 @@ import { OllamaClient } from "@/lib/ollama/client";
 import { vectorStore } from "@/lib/vector";
 import { createAgentPipeline } from "@/services/agent-pipeline";
 import { useSettingsStore } from "./settings-store";
+import { MARKDOWN_INSTRUCTIONS } from "@/lib/markdown-prompts";
 
 type ChatMode = "simple" | "agentic";
 
@@ -55,6 +56,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         ...chatSettings,
         embeddingModel,
         rerankingModel,
+        promptOptions: { instructions: MARKDOWN_INSTRUCTIONS },
       });
       let assistant: Message = { id: crypto.randomUUID(), role: "assistant", content: "" };
       set((state) => ({ messages: [...state.messages, assistant] }));
