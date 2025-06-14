@@ -35,9 +35,11 @@ export function createAgentPipeline(config: PipelineConfig) {
       tools.push(step);
       return this;
     },
-    async *run(messages: Message[]): AsyncGenerator<PipelineOutput> {
+    async *run(messages: Message[], signal?: AbortSignal): AsyncGenerator<PipelineOutput> {
+      const isAborted = () => signal?.aborted;
       const query = messages[messages.length - 1]?.content ?? "";
       yield { type: "status", message: "Embedding query" } as const;
+      if (isAborted()) return;
       try {
         await embedder.embed(query);
       } catch (error) {
@@ -45,7 +47,10 @@ export function createAgentPipeline(config: PipelineConfig) {
         yield { type: "status", message: "Embedding failed" } as const;
       }
 
+      if (isAborted()) return;
+      
       yield { type: "status", message: "Retrieving documents" } as const;
+      if (isAborted()) return;
       let docs: SearchResult[] = [];
       try {
         docs = await retriever.getRelevantDocuments(query);
@@ -54,13 +59,18 @@ export function createAgentPipeline(config: PipelineConfig) {
         yield { type: "status", message: "Retrieval failed" } as const;
       }
 
+      if (isAborted()) return;
+
       yield { type: "status", message: "Reranking results" } as const;
+      if (isAborted()) return;
       let ranked = docs;
       try {
         ranked = await reranker.rerank(docs);
       } catch (error) {
         console.error("Reranking failed", error);
       }
+
+      if (isAborted()) return;
 
       const assembled = rag.assemble(messages, ranked);
       const prompt = promptBuilder.build(assembled);
@@ -69,9 +79,13 @@ export function createAgentPipeline(config: PipelineConfig) {
         await tool.invoke(prompt);
       }
 
+      if (isAborted()) return;
+
       yield { type: "status", message: "Invoking model" } as const;
+      if (isAborted()) return;
       try {
         for await (const chunk of chat.invoke({ model: "llama3", messages: [{ role: "user", content: prompt }] })) {
+          if (isAborted()) return;
           yield { type: "chat", chunk } as const;
         }
         yield { type: "status", message: "Completed" } as const;

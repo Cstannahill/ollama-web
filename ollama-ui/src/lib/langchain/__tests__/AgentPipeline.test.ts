@@ -17,9 +17,19 @@ vi.mock('../../../services/reranker-service', () => ({
 
 describe('AgentPipeline', () => {
   it('runs pipeline', async () => {
-    const pipeline = createAgentPipeline({ temperature: 0, maxTokens: 0, systemPrompt: '' });
+    const pipeline = createAgentPipeline({
+      temperature: 0,
+      maxTokens: 0,
+      systemPrompt: '',
+    });
     const iter = pipeline.run([]);
-    const { value } = await iter.next();
-    expect(value?.message).toBe('hello');
+    let result: string | undefined;
+    for await (const out of iter) {
+      if (out.type === 'chat') {
+        result = out.chunk.message;
+        break;
+      }
+    }
+    expect(result).toBe('hello');
   });
 });

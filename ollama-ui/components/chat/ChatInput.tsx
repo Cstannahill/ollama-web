@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 
 interface ChatInputProps {
   onSend: (text: string) => void;
+  disabled?: boolean;
 }
 
-export const ChatInput = ({ onSend }: ChatInputProps) => {
+export const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
   const [text, setText] = useState("");
 
   return (
@@ -23,9 +24,12 @@ export const ChatInput = ({ onSend }: ChatInputProps) => {
         className="flex-1 rounded border p-2"
         value={text}
         onChange={(e) => setText(e.target.value)}
+        disabled={disabled}
         rows={1}
       />
-      <Button type="submit">Send</Button>
+      <Button type="submit" disabled={disabled}>
+        Send
+      </Button>
     </form>
   );
 };

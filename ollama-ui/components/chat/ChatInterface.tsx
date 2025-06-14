@@ -3,12 +3,13 @@ import { useEffect, useRef } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { useChatStore } from "@/stores/chat-store";
-import { ThemeToggle, Badge } from "@/components/ui";
+import { ThemeToggle, Badge, Button, Spinner } from "@/components/ui";
 import { ExportMenu } from "./ExportMenu";
 import { AgentStatus } from "./AgentStatus";
 
 export const ChatInterface = () => {
-  const { messages, isStreaming, sendMessage, mode, status } = useChatStore();
+  const { messages, isStreaming, sendMessage, stop, mode, status } =
+    useChatStore();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,7 +24,17 @@ export const ChatInterface = () => {
           <Badge>{mode} mode</Badge>
         </div>
         <div className="flex items-center gap-2">
-          {status && <span className="text-xs italic text-gray-500">{status}</span>}
+          {status && (
+            <span className="text-xs italic text-gray-500 flex items-center gap-1">
+              {isStreaming && <Spinner className="w-3 h-3" />}
+              {status}
+            </span>
+          )}
+          {isStreaming && (
+            <Button variant="outline" size="icon" onClick={stop}>
+              Stop
+            </Button>
+          )}
           <ThemeToggle />
         </div>
       </div>
@@ -35,7 +46,7 @@ export const ChatInterface = () => {
         <AgentStatus />
         <div ref={bottomRef} />
       </div>
-      <ChatInput onSend={sendMessage} />
+      <ChatInput onSend={sendMessage} disabled={isStreaming} />
     </div>
   );
 };
