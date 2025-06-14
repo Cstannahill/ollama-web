@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui";
-import { Suspense } from "react";
-import Header from "@/components/Header";
-import HeaderSkeleton from "@/components/HeaderSkeleton";
-import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import { ServiceWorkerProvider } from "@/components/performance";
+import { MainShell } from "@/components/layout";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,13 +18,8 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <ThemeProvider>
-          <Suspense fallback={<HeaderSkeleton />}>
-            <Header />
-          </Suspense>
-          {children}
-          <ServiceWorkerRegister />
           <ServiceWorkerProvider />
-          {children}
+          <MainShell>{children}</MainShell>
         </ThemeProvider>
       </body>
     </html>
