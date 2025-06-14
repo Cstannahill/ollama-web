@@ -11,9 +11,11 @@ interface ChatState {
   messages: Message[];
   isStreaming: boolean;
   status: string | null;
+  error: string | null;
   abortController: AbortController | null;
   mode: ChatMode;
   setMode: (mode: ChatMode) => void;
+  setError: (msg: string | null) => void;
   sendMessage: (text: string) => Promise<void>;
   stop: () => void;
 }
@@ -22,9 +24,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],
   isStreaming: false,
   status: null,
+  error: null,
   abortController: null,
   mode: "simple",
   setMode: (mode) => set({ mode }),
+  setError: (msg) => set({ error: msg }),
   async sendMessage(text: string) {
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
     const current = get().messages;
@@ -71,7 +75,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }
       } catch (error) {
         console.error("Pipeline run failed", error);
-        set({ status: "Unexpected error" });
+        set({ status: "Unexpected error", error: "Pipeline failed" });
       }
       set({ isStreaming: false, status: null, abortController: null });
       return;
@@ -82,22 +86,27 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
     let assistant: Message = { id: crypto.randomUUID(), role: "assistant", content: "" };
     set((state) => ({ messages: [...state.messages, assistant] }));
-    for await (const chunk of client.chat({
-      model: "llama3",
-      messages: [...current, userMsg],
-    })) {
-      assistant = { ...assistant, content: assistant.content + chunk.message };
-      set((state) => {
-        const msgs = [...state.messages];
-        msgs[msgs.length - 1] = assistant;
-        return { messages: msgs };
-      });
+    try {
+      for await (const chunk of client.chat({
+        model: "llama3",
+        messages: [...current, userMsg],
+      })) {
+        assistant = { ...assistant, content: assistant.content + chunk.message };
+        set((state) => {
+          const msgs = [...state.messages];
+          msgs[msgs.length - 1] = assistant;
+          return { messages: msgs };
+        });
+      }
+    } catch (error) {
+      console.error("Chat request failed", error);
+      set({ error: "Chat request failed" });
     }
     set({ isStreaming: false, status: null, abortController: null });
   },
   stop() {
     get().abortController?.abort();
-    set({ isStreaming: false, status: null, abortController: null });
+    set({ isStreaming: false, status: null, abortController: null, error: null });
   },
 }));
 

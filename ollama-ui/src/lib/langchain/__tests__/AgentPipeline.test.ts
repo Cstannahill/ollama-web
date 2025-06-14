@@ -22,7 +22,7 @@ describe('AgentPipeline', () => {
       maxTokens: 0,
       systemPrompt: '',
     });
-    const iter = pipeline.run([]);
+    const iter = pipeline.run([{ id: '1', role: 'user', content: 'hello' }]);
     let result: string | undefined;
     for await (const out of iter) {
       if (out.type === 'chat') {

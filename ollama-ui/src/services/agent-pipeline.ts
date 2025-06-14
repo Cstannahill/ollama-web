@@ -13,6 +13,7 @@ import { QueryEmbedder } from "@/lib/langchain/query-embedder";
 import { Reranker } from "@/lib/langchain/reranker";
 import { RagAssembler } from "@/lib/langchain/rag-assembler";
 import { ContextSummarizer } from "@/lib/langchain/context-summarizer";
+import { ResponseLogger } from "@/lib/langchain/response-logger";
 
 export interface PipelineConfig extends ChatSettings {
   embeddingModel?: string | null;
@@ -35,6 +36,7 @@ export function createAgentPipeline(config: PipelineConfig) {
   const promptBuilder = new PromptBuilder(promptOptions);
   const summarizer = new ContextSummarizer(summaryLength);
   const chat = new OllamaChat(chatSettings);
+  const logger = new ResponseLogger();
 
 
   const tools: Runnable[] = [];
@@ -47,6 +49,10 @@ export function createAgentPipeline(config: PipelineConfig) {
     async *run(messages: Message[], signal?: AbortSignal): AsyncGenerator<PipelineOutput> {
       const isAborted = () => signal?.aborted;
       const query = messages[messages.length - 1]?.content ?? "";
+      if (!query.trim()) {
+        yield { type: "status", message: "Query empty" } as const;
+        return;
+      }
       yield { type: "status", message: "Embedding query" } as const;
       if (isAborted()) return;
       try {
@@ -65,7 +71,15 @@ export function createAgentPipeline(config: PipelineConfig) {
         docs = await retriever.getRelevantDocuments(query);
       } catch (error) {
         console.error("Retrieval failed", error);
-        yield { type: "status", message: "Retrieval failed" } as const;
+        yield { type: "status", message: "Retrieval failed, retrying" } as const;
+        if (!isAborted()) {
+          try {
+            docs = await retriever.getRelevantDocuments(query);
+          } catch (err) {
+            console.error("Retrieval retry failed", err);
+            yield { type: "status", message: "Retrieval failed" } as const;
+          }
+        }
       }
 
       if (isAborted()) return;
@@ -112,11 +126,18 @@ export function createAgentPipeline(config: PipelineConfig) {
       yield { type: "status", message: "Invoking model" } as const;
       if (isAborted()) return;
       try {
+        let full = "";
         for await (const chunk of chat.invoke({ model: "llama3", messages: [{ role: "user", content: prompt }] })) {
           if (isAborted()) return;
+          full += chunk.message;
           yield { type: "chat", chunk } as const;
         }
         yield { type: "status", message: "Completed" } as const;
+        try {
+          await logger.log([...messages, { id: crypto.randomUUID(), role: "assistant", content: full }]);
+        } catch (err) {
+          console.error("Logger failed", err);
+        }
       } catch (error) {
         console.error("Chat invocation failed", error);
         yield { type: "status", message: "Model invocation failed" } as const;
