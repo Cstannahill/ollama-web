@@ -31,3 +31,6 @@ Progress: Implemented embedding and reranking services. Refactored useChatStore 
 - Build succeeds but tests currently fail.
 - Added "thinking" output event and UI panel.
 - Added safeguards for empty queries and tool failures.
+- Added docs output event and UI component to display retrieved context.
+- Added spinner to status messages while streaming.
+- Conversation history saved to vector store after completion with error handling.

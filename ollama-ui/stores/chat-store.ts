@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Message } from "@/types";
+import type { Message, SearchResult } from "@/types";
 import { OllamaClient } from "@/lib/ollama/client";
 import { vectorStore } from "@/lib/vector";
 import { createAgentPipeline } from "@/services/agent-pipeline";
@@ -12,6 +12,7 @@ interface ChatState {
   isStreaming: boolean;
   status: string | null;
   thinking: string | null;
+  docs: SearchResult[];
   mode: ChatMode;
   setMode: (mode: ChatMode) => void;
   sendMessage: (text: string) => Promise<void>;
@@ -22,6 +23,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isStreaming: false,
   status: null,
   thinking: null,
+  docs: [],
   mode: "simple",
   setMode: (mode) => set({ mode }),
   async sendMessage(text: string) {
@@ -52,6 +54,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
           set({ status: out.message });
           continue;
         }
+        if (out.type === "docs") {
+          set({ docs: out.docs });
+          continue;
+        }
         if (out.type === "thinking") {
           set({ thinking: out.message });
           continue;
@@ -63,7 +69,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           return { messages: msgs };
         });
       }
-      set({ isStreaming: false, status: null, thinking: null });
+      set({ isStreaming: false, status: null, thinking: null, docs: [] });
       return;
     }
 
@@ -84,7 +90,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
     }
 
-    set({ isStreaming: false, status: null, thinking: null });
+    set({ isStreaming: false, status: null, thinking: null, docs: [] });
   },
 }));
 
