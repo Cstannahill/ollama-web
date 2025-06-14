@@ -38,3 +38,6 @@ Progress: Implemented embedding and reranking services. Refactored useChatStore 
 - Added docs output event and UI component to display retrieved context.
 - Added spinner to status messages while streaming.
 - Conversation history saved to vector store after completion with error handling.
+- Added tool output event with UI component.
+- Added copy-to-clipboard action for messages.
+- Added safeguards for summarizer and tool invocation failures.
