@@ -1,5 +1,6 @@
-import type { Message, ChatResponse } from "../";
+import type { Message } from "../";
+import type { PipelineOutput } from "./PipelineOutput";
 
 export interface AgentPipeline {
-  run(messages: Message[]): AsyncGenerator<ChatResponse>;
+  run(messages: Message[]): AsyncGenerator<PipelineOutput>;
 }

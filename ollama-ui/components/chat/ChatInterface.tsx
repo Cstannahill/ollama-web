@@ -5,9 +5,10 @@ import { ChatInput } from "./ChatInput";
 import { useChatStore } from "@/stores/chat-store";
 import { ThemeToggle, Badge } from "@/components/ui";
 import { ExportMenu } from "./ExportMenu";
+import { AgentStatus } from "./AgentStatus";
 
 export const ChatInterface = () => {
-  const { messages, isStreaming, sendMessage, mode } = useChatStore();
+  const { messages, isStreaming, sendMessage, mode, status } = useChatStore();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -21,13 +22,17 @@ export const ChatInterface = () => {
           <ExportMenu />
           <Badge>{mode} mode</Badge>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          {status && <span className="text-xs italic text-gray-500">{status}</span>}
+          <ThemeToggle />
+        </div>
       </div>
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
         {messages.map((m, i) => (
           <ChatMessage key={i} message={m} />
         ))}
         {isStreaming && <ChatMessage message={{ role: "assistant", content: "" }} />}
+        <AgentStatus />
         <div ref={bottomRef} />
       </div>
       <ChatInput onSend={sendMessage} />

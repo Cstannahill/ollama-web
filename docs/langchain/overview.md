@@ -2,12 +2,12 @@
 
 ## Feature Purpose and Scope
 
-Provide a modular pipeline for retrieval augmented generation (RAG) using LangChain. The pipeline handles embeddings, vector search, reranking and prompt assembly before streaming results from Ollama.
+Provide a modular pipeline for retrieval augmented generation (RAG) using LangChain. The pipeline handles embeddings, vector search, reranking and prompt assembly before streaming results from Ollama. Each step emits progress events so the UI can display the agent's current action.
 
 ## Core Flows and UI Touchpoints
 
 - Pipeline created in `useChatStore` with current `ChatSettings`.
-- Messages streamed from the pipeline directly into the chat UI.
+- Messages and progress updates streamed from the pipeline directly into the chat UI.
 
 ## Primary Types/Interfaces
 
