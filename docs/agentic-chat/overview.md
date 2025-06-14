@@ -2,7 +2,7 @@
 
 ## Feature Purpose and Scope
 
-Enable advanced conversation capabilities with context-aware responses. When activated, the chat retrieves relevant information from the local vector database before sending messages to Ollama.
+Enable advanced conversation capabilities with context-aware responses. When activated, the chat routes messages through the LangChain agent pipeline to retrieve context and assemble prompts before calling Ollama.
 
 ## Core Flows and UI Touchpoints
 
@@ -20,6 +20,7 @@ Enable advanced conversation capabilities with context-aware responses. When act
 ## Key Dependencies and Related Modules
 
 - `VectorStoreService` in `src/lib/vector/store.ts`.
+- `EmbeddingService` and `RerankerService` for improved search quality.
 - Zustand stores `chat-store.ts` and `settings-store.ts`.
 - UI components under `components/chat` and `components/ui`.
 
@@ -29,9 +30,10 @@ Enable advanced conversation capabilities with context-aware responses. When act
 flowchart TD
     User --> ChatInput
     ChatInput --> ChatStore
-    ChatStore -- agentic mode --> VectorStoreService
-    VectorStoreService --> ChromaDB[(Vector DB)]
-    ChatStore --> OllamaAPI
-    OllamaAPI --> ChatStore
+    ChatStore --> AgentPipeline
+    AgentPipeline --> VectorStoreService
+    AgentPipeline --> OllamaAPI
     ChatStore --> ChatInterface
 ```
+
+See [LangChain overview](../langchain/overview.md) for pipeline details.

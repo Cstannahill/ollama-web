@@ -6,6 +6,8 @@ import {
 import { VectorStoreRetriever } from "@/lib/langchain/vector-retriever";
 import { PromptBuilder } from "@/lib/langchain/prompt-builder";
 import { OllamaChat } from "@/lib/langchain/ollama-chat";
+import { RerankerService } from "@/services/reranker-service";
+import type { ChatSettings, Message, ChatResponse, SearchResult } from "@/types";
 import { QueryEmbedder } from "@/lib/langchain/query-embedder";
 import { Reranker } from "@/lib/langchain/reranker";
 import { RagAssembler } from "@/lib/langchain/rag-assembler";
@@ -23,15 +25,20 @@ export interface PipelineConfig extends ChatSettings {
   rerankingModel?: string | null;
   promptOptions?: PromptOptions;
 }
-
 export function createAgentPipeline(config: PipelineConfig) {
   const { embeddingModel, rerankingModel, promptOptions, ...chatSettings } = config;
   const retriever = new VectorStoreRetriever();
+
+  const reranker = new RerankerService();
+  const promptBuilder = new PromptBuilder({ systemPrompt: settings.systemPrompt });
+  const chat = new OllamaChat(settings);
+
   const embedder = new QueryEmbedder(embeddingModel);
   const reranker = new Reranker(rerankingModel);
   const rag = new RagAssembler();
   const promptBuilder = new PromptBuilder(promptOptions);
   const chat = new OllamaChat(chatSettings);
+
 
   let chain: Runnable<Message[], unknown> = RunnableSequence.from([
     RunnableLambda.from(async (messages: Message[]) => {
@@ -45,6 +52,8 @@ export function createAgentPipeline(config: PipelineConfig) {
     }),
     RunnableLambda.from(async ({ query }: { query: string }) => {
       const docs = await retriever.getRelevantDocuments(query);
+      const ranked = await reranker.rerank(query, docs);
+      return { messages, docs: ranked } as { messages: Message[]; docs: SearchResult[] };
       return { query, docs } as { query: string; docs: SearchResult[] };
     }),
     RunnableLambda.from(async ({ messages, docs }: { messages: Message[]; docs: SearchResult[] }) => {

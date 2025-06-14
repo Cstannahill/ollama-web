@@ -14,7 +14,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   vectorStorePath: null,
   embeddingModel: null,
   rerankingModel: null,
-  chatSettings: { temperature: 0.7, maxTokens: 256 },
+  chatSettings: { temperature: 0.7, maxTokens: 256, systemPrompt: "" },
   setTheme: (theme) => set({ theme }),
   setVectorStorePath: (vectorStorePath) => set({ vectorStorePath }),
   setEmbeddingModel: (embeddingModel) => set({ embeddingModel }),

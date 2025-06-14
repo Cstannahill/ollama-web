@@ -42,6 +42,19 @@ export const ChatSettings = () => {
               <option value="agentic">agentic</option>
             </select>
           </div>
+          <div className="mt-4">
+            <label className="block text-sm font-medium mb-1">
+              System Prompt
+            </label>
+            <textarea
+              value={chatSettings.systemPrompt}
+              onChange={(e) =>
+                updateChatSettings({ systemPrompt: e.target.value })
+              }
+              className="border p-1 rounded w-full text-sm"
+              rows={3}
+            />
+          </div>
         </div>
       )}
     </div>

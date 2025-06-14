@@ -16,6 +16,9 @@ Use this checklist to track progress while implementing the LangChain pipeline d
 - [x] Create `AgentPipeline` service in `src/services/agent-pipeline.ts` exposing `.use()` for additional steps.
 - [x] Ensure agentic pipeline flow includes at least, but not limited to: Embedding, Reranking, RAG, Custom instructions, and all other features expected from a high quality agentic AI pipeline.
 - [x] Refactor `useChatStore` to create and run the pipeline instead of calling `OllamaClient` directly.
+- [x] Add unit tests for wrappers and the pipeline.
+- [x] Create `docs/langchain/overview.md` and update existing diagrams to include the new pipeline.
+- [ ] Run `pnpm test` and `pnpm build` to verify before opening a PR.
 - [ ] Add unit tests for wrappers and the pipeline.
 - [ ] Create `docs/langchain/overview.md` and update existing diagrams to include the new pipeline.
 - [ ] Run `pnpm test` and `pnpm build` to verify before opening a PR.
@@ -24,3 +27,5 @@ Use this checklist to track progress while implementing the LangChain pipeline d
 - Implemented embedder, reranker, and RAG assembler modules.
 - Refactored useChatStore to run createAgentPipeline.
 - Next: add unit tests and update documentation.
+
+\nProgress: Implemented embedding and reranking services. Refactored useChatStore to use LangChain pipeline.
