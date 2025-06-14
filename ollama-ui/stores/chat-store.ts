@@ -12,6 +12,8 @@ interface ChatState {
   isStreaming: boolean;
   status: string | null;
   thinking: string | null;
+  summary: string | null;
+  error: string | null;
   tokens: number | null;
   docs: SearchResult[];
   mode: ChatMode;
@@ -24,14 +26,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isStreaming: false,
   status: null,
   thinking: null,
+  summary: null,
+  error: null,
   tokens: null,
-  docs: [],
   mode: "simple",
   setMode: (mode) => set({ mode }),
   async sendMessage(text: string) {
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
     const current = get().messages;
-    set({ messages: [...current, userMsg], isStreaming: true, status: null });
+    set({ messages: [...current, userMsg], isStreaming: true, status: null, summary: null, error: null });
 
     const {
       vectorStorePath,
@@ -56,7 +59,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         rerankingModel,
       });
       let assistant: Message = { id: crypto.randomUUID(), role: "assistant", content: "" };
-      set((state) => ({ messages: [...state.messages, assistant] }));
+      set((state) => ({ messages: [...state.messages, assistant], summary: null, error: null }));
       for await (const out of pipeline.run([...current, userMsg])) {
         if (out.type === "status") {
           set({ status: out.message });
@@ -70,8 +73,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
           set({ thinking: out.message });
           continue;
         }
+        if (out.type === "error") {
+          set({ error: out.message });
+          continue;
+        }
+        if (out.type === "summary") {
+          set({ summary: out.message });
+
         if (out.type === "tokens") {
           set({ tokens: out.count });
+
           continue;
         }
         assistant = { ...assistant, content: assistant.content + out.chunk.message };

@@ -30,7 +30,12 @@ describe('AgentPipeline', () => {
     expect(docs).toBeTruthy();
     const thinking = outputs.find(o => o.type === 'thinking');
     expect(thinking).toBeTruthy();
+
+    const summary = outputs.find(o => o.type === 'summary');
+    expect(summary).toBeTruthy();
+
     const tokens = outputs.find(o => o.type === 'tokens');
     expect(tokens.count).toBeGreaterThan(0);
+
   });
 });

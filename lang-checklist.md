@@ -31,6 +31,7 @@ Progress: Implemented embedding and reranking services. Refactored useChatStore 
 - Build succeeds but tests currently fail.
 - Added "thinking" output event and UI panel.
 - Added safeguards for empty queries and tool failures.
+- Added summariser step with UI summary panel. Enhanced error events for retrieval and model invocation.
 - Introduced HistoryTrimmer step and token stats event.
 - Added UI components for token display and disabled input during streaming.
 - Added error handling for vector store initialization and RAG assembly.

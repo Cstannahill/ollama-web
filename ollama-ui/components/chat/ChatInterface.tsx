@@ -7,6 +7,8 @@ import { ThemeToggle, Badge } from "@/components/ui";
 import { ExportMenu } from "./ExportMenu";
 import { AgentStatus } from "./AgentStatus";
 import { AgentThinking } from "./AgentThinking";
+import { AgentSummary } from "./AgentSummary";
+import { AgentError } from "./AgentError";
 import { TokenInfo } from "./TokenInfo";
 import { AgentDocs } from "./AgentDocs";
 
@@ -39,6 +41,8 @@ export const ChatInterface = () => {
         <AgentStatus />
         <AgentDocs />
         <AgentThinking />
+        <AgentError />
+        <AgentSummary />
         <TokenInfo />
         <div ref={bottomRef} />
       </div>
