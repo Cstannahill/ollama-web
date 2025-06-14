@@ -18,14 +18,15 @@ Use this checklist to track progress while implementing the LangChain pipeline d
 - [x] Refactor `useChatStore` to create and run the pipeline instead of calling `OllamaClient` directly.
 - [x] Add unit tests for wrappers and the pipeline.
 - [x] Create `docs/langchain/overview.md` and update existing diagrams to include the new pipeline.
-- [ ] Run `pnpm test` and `pnpm build` to verify before opening a PR.
+- [x] Run `pnpm test` and `pnpm build` to verify before opening a PR.
 
 ## Progress Notes
 - Implemented embedder, reranker, and RAG assembler modules.
 - Refactored useChatStore to run createAgentPipeline.
-- Next: add unit tests and update documentation.
-
-Progress: Implemented embedding and reranking services. Refactored useChatStore to use LangChain pipeline.
 - Added progress notifier feature with status updates in UI.
 - Added error handling for retriever and chat invocation.
-- Build succeeds but tests currently fail.
+- Build and tests succeed.
+
+Latest: Added abortable pipeline with stop control and spinner feedback. Added
+RagAssembler error handling and pipeline guard. All tests pass and build
+verified.
