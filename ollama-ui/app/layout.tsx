@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui";
-import { Suspense } from "react";
 import { MainShell } from "@/components/layout";
-import Header from "@/components/Header";
-import HeaderSkeleton from "@/components/HeaderSkeleton";
 import { ServiceWorkerProvider } from "@/components/performance";
 
 export const metadata: Metadata = {
@@ -19,12 +16,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <ThemeProvider>
-          <MainShell>
-            <Suspense fallback={<HeaderSkeleton />}>
-              <Header />
-            </Suspense>
-            {children}
-          </MainShell>
+          <MainShell>{children}</MainShell>
           <ServiceWorkerProvider />
         </ThemeProvider>
       </body>
