@@ -35,12 +35,12 @@ describe('AgentPipeline', () => {
 
     const tokens = outputs.find(o => o.type === 'tokens');
     expect(tokens.count).toBeGreaterThan(0);
-    const pipeline = createAgentPipeline({
+    const pipe = createAgentPipeline({
       temperature: 0,
       maxTokens: 0,
       systemPrompt: '',
     });
-    const iter = pipeline.run([{ id: '1', role: 'user', content: 'hello' }]);
+    const iter = pipe.run([{ id: '1', role: 'user', content: 'hello' }]);
     let result: string | undefined;
     for await (const out of iter) {
       if (out.type === 'chat') {
