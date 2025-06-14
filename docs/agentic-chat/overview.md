@@ -12,6 +12,8 @@ Enable advanced conversation capabilities with context-aware responses. When act
 - Current mode is displayed as a badge in `ChatInterface`.
 - Agent status updates (e.g. "retrieving documents") are shown below the conversation.
 - A collapsible "Thinking" panel displays reasoning details from the pipeline.
+- Retrieved context documents are listed in a collapsible "Context Documents" section.
+- Status messages show a spinner while streaming is active.
 
 ## Primary Types/Interfaces
 
