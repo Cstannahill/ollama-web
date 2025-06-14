@@ -3,14 +3,25 @@ import { useEffect, useRef } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { useChatStore } from "@/stores/chat-store";
-import { ThemeToggle, Badge, Button, Spinner } from "@/components/ui";
+import { ThemeToggle, Badge, Button, Spinner, Progress, Toast } from "@/components/ui";
 import { ExportMenu } from "./ExportMenu";
 import { AgentStatus } from "./AgentStatus";
 
 export const ChatInterface = () => {
-  const { messages, isStreaming, sendMessage, stop, mode, status } =
+  const { messages, isStreaming, sendMessage, stop, mode, status, error, setError } =
     useChatStore();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const statusOrder = [
+    "Embedding query",
+    "Retrieving documents",
+    "Reranking results",
+    "Summarizing context",
+    "Building prompt",
+    "Invoking model",
+    "Completed",
+  ];
+  const idx = statusOrder.indexOf(status ?? "");
+  const progress = idx >= 0 ? ((idx + 1) / statusOrder.length) * 100 : 0;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -40,6 +51,7 @@ export const ChatInterface = () => {
           <ThemeToggle />
         </div>
       </div>
+      {isStreaming && <Progress value={progress} />}
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
         {messages.map((m, i) => (
           <ChatMessage key={i} message={m} />
@@ -49,6 +61,7 @@ export const ChatInterface = () => {
         <div ref={bottomRef} />
       </div>
       <ChatInput onSend={sendMessage} disabled={isStreaming} />
+      {error && <Toast message={error} onDismiss={() => setError(null)} />}
     </div>
   );
 };

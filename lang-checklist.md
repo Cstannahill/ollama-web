@@ -31,3 +31,4 @@ Latest: Added abortable pipeline with stop control and spinner feedback. Added
 RagAssembler error handling and pipeline guard. All tests pass and build
 verified.
 Added context summarizer step with error handling and prompt build guard. Implemented character count in chat input and colored status messages for clearer feedback. Build verified.
+Added response logger step with local history, retrieval retry and empty-query safeguard. Introduced progress bar and error toast UI components. Build and tests pass.

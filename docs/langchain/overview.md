@@ -32,12 +32,15 @@ flowchart TD
         S[ContextSummarizer]
         P[PromptBuilder]
         C[OllamaChat]
+        L[ResponseLogger]
     end
-    Q --> E --> R --> RR --> S --> P --> C
+    Q --> E --> R --> RR --> S --> P --> C --> L
 ```
 
 ## Future Agentic Operations
 
 - **Query Rewriting**: dynamically reformulate user questions for better retrieval.
 - **External API tools**: integrate web search or data-fetching functions for enriched answers.
+- **Response rating**: solicit quick thumbs-up/down to improve future results.
+- **Automatic summarization**: store brief summaries of long chats for efficient recall.
 
