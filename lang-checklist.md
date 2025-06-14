@@ -31,3 +31,4 @@ Progress: Implemented embedding and reranking services. Refactored useChatStore 
 - Build succeeds but tests currently fail.
 - Added "thinking" output event and UI panel.
 - Added safeguards for empty queries and tool failures.
+- Added summariser step with UI summary panel. Enhanced error events for retrieval and model invocation.

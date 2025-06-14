@@ -7,6 +7,8 @@ import { ThemeToggle, Badge } from "@/components/ui";
 import { ExportMenu } from "./ExportMenu";
 import { AgentStatus } from "./AgentStatus";
 import { AgentThinking } from "./AgentThinking";
+import { AgentSummary } from "./AgentSummary";
+import { AgentError } from "./AgentError";
 
 export const ChatInterface = () => {
   const { messages, isStreaming, sendMessage, mode, status } = useChatStore();
@@ -35,6 +37,8 @@ export const ChatInterface = () => {
         {isStreaming && <ChatMessage message={{ role: "assistant", content: "" }} />}
         <AgentStatus />
         <AgentThinking />
+        <AgentError />
+        <AgentSummary />
         <div ref={bottomRef} />
       </div>
       <ChatInput onSend={sendMessage} />

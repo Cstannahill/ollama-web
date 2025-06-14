@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createAgentPipeline } from '../../../services/agent-pipeline';
+import type { PipelineOutput } from '@/types';
 
 vi.mock('../vector-retriever', () => ({
   VectorStoreRetriever: class {
@@ -18,7 +19,7 @@ vi.mock('../../../services/reranker-service', () => ({
 describe('AgentPipeline', () => {
   it('runs pipeline', async () => {
     const pipeline = createAgentPipeline({ temperature: 0, maxTokens: 0, systemPrompt: '' });
-    const outputs = [] as any[];
+    const outputs: PipelineOutput[] = [];
     for await (const out of pipeline.run([{ id: '1', role: 'user', content: 'hi' }])) {
       outputs.push(out);
     }
@@ -26,5 +27,7 @@ describe('AgentPipeline', () => {
     expect(chat.chunk.message).toBe('hello');
     const thinking = outputs.find(o => o.type === 'thinking');
     expect(thinking).toBeTruthy();
+    const summary = outputs.find(o => o.type === 'summary');
+    expect(summary).toBeTruthy();
   });
 });

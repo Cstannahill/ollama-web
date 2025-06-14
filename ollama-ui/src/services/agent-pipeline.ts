@@ -12,6 +12,7 @@ import type { PipelineOutput } from "@/types";
 import { QueryEmbedder } from "@/lib/langchain/query-embedder";
 import { Reranker } from "@/lib/langchain/reranker";
 import { RagAssembler } from "@/lib/langchain/rag-assembler";
+import { ResponseSummarizer } from "@/lib/langchain/response-summarizer";
 
 export interface PipelineConfig extends ChatSettings {
   embeddingModel?: string | null;
@@ -26,6 +27,7 @@ export function createAgentPipeline(config: PipelineConfig) {
   const rag = new RagAssembler();
   const promptBuilder = new PromptBuilder(promptOptions);
   const chat = new OllamaChat(chatSettings);
+  const summarizer = new ResponseSummarizer();
 
 
   const tools: Runnable[] = [];
@@ -55,7 +57,7 @@ export function createAgentPipeline(config: PipelineConfig) {
         docs = await retriever.getRelevantDocuments(query);
       } catch (error) {
         console.error("Retrieval failed", error);
-        yield { type: "status", message: "Retrieval failed" } as const;
+        yield { type: "error", message: "Retrieval failed" } as const;
       }
 
       yield { type: "status", message: "Reranking results" } as const;
@@ -83,13 +85,17 @@ export function createAgentPipeline(config: PipelineConfig) {
 
       yield { type: "status", message: "Invoking model" } as const;
       try {
+        let full = "";
         for await (const chunk of chat.invoke({ model: "llama3", messages: [{ role: "user", content: prompt }] })) {
+          full += chunk.message;
           yield { type: "chat", chunk } as const;
         }
+        const summary = summarizer.summarize(full);
+        yield { type: "summary", message: summary } as const;
         yield { type: "status", message: "Completed" } as const;
       } catch (error) {
         console.error("Chat invocation failed", error);
-        yield { type: "status", message: "Model invocation failed" } as const;
+        yield { type: "error", message: "Model invocation failed" } as const;
       }
     },
   };
