@@ -12,6 +12,7 @@ Enable advanced conversation capabilities with context-aware responses. When act
 - Current mode is displayed as a badge in `ChatInterface`.
 - Agent status updates (e.g. "retrieving documents") are shown below the conversation.
 - A collapsible "Thinking" panel displays reasoning details from the pipeline.
+- Token estimates are displayed after each request.
 
 ## Primary Types/Interfaces
 

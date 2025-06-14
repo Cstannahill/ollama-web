@@ -12,6 +12,7 @@ interface ChatState {
   isStreaming: boolean;
   status: string | null;
   thinking: string | null;
+  tokens: number | null;
   mode: ChatMode;
   setMode: (mode: ChatMode) => void;
   sendMessage: (text: string) => Promise<void>;
@@ -22,6 +23,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isStreaming: false,
   status: null,
   thinking: null,
+  tokens: null,
   mode: "simple",
   setMode: (mode) => set({ mode }),
   async sendMessage(text: string) {
@@ -38,7 +40,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     if (get().mode === "agentic" && vectorStorePath) {
       if (!(vectorStore as any).collection) {
-        await vectorStore.initialize({ storagePath: vectorStorePath });
+        try {
+          await vectorStore.initialize({ storagePath: vectorStorePath });
+        } catch (error) {
+          console.error("Vector store init failed", error);
+          set({ isStreaming: false, status: "Vector DB init failed", thinking: null, tokens: null });
+          return;
+        }
       }
       const pipeline = createAgentPipeline({
         ...chatSettings,
@@ -56,6 +64,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
           set({ thinking: out.message });
           continue;
         }
+        if (out.type === "tokens") {
+          set({ tokens: out.count });
+          continue;
+        }
         assistant = { ...assistant, content: assistant.content + out.chunk.message };
         set((state) => {
           const msgs = [...state.messages];
@@ -63,7 +75,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           return { messages: msgs };
         });
       }
-      set({ isStreaming: false, status: null, thinking: null });
+      set({ isStreaming: false, status: null, thinking: null, tokens: null });
       return;
     }
 
@@ -84,7 +96,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
     }
 
-    set({ isStreaming: false, status: null, thinking: null });
+    set({ isStreaming: false, status: null, thinking: null, tokens: null });
   },
 }));
 
