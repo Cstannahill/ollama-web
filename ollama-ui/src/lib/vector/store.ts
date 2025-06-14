@@ -11,10 +11,12 @@ export class VectorStoreService {
   private initialized = false;
   private docs: Document[] = [];
   private embeddings: Embedding[] = [];
+
   private searchCache = new Map<
     string,
     { results: SearchResult[]; time: number }
   >();
+
   private cacheOrder: string[] = [];
   private readonly MAX_CACHE = 50;
   private readonly CACHE_TTL = 300_000; // 5 minutes
@@ -23,6 +25,7 @@ export class VectorStoreService {
   );
 
   async initialize(options: VectorStoreOptions): Promise<void> {
+    if (this.initialized) return;
     void options;
     this.initialized = true;
   }
