@@ -39,12 +39,6 @@ export class VectorStoreService {
 
   async search(query: string, filters?: SearchFilters): Promise<SearchResult[]> {
     if (!this.initialized) throw new Error("Vector store not initialized");
-    const cacheKey = query + JSON.stringify(filters);
-    const cached = this.searchCache.get(cacheKey);
-    if (cached) {
-      this.searchOrder = this.searchOrder.filter((k) => k !== cacheKey);
-      this.searchOrder.push(cacheKey);
-
     const key = JSON.stringify({ query, filters });
     const cached = this.searchCache.get(key);
     if (cached) {
@@ -52,6 +46,7 @@ export class VectorStoreService {
       this.cacheOrder.push(key);
       return cached;
     }
+
     const qEmb = await this.embedder.generateEmbedding(
       query,
       "embedding-model",
@@ -63,16 +58,8 @@ export class VectorStoreService {
       for (let j = 0; j < len; j++) score += qEmb[j] * emb[j];
       return { id: d.id, text: d.text, metadata: d.metadata, score };
     });
-    results.sort((a, b) => b.score - a.score);
-    const top = results.slice(0, filters?.topK || 5);
-    this.searchCache.set(cacheKey, top);
-    this.searchOrder.push(cacheKey);
-    if (this.searchOrder.length > this.maxCache) {
-      const old = this.searchOrder.shift();
-      if (old) this.searchCache.delete(old);
-    }
-    return top;
 
+    results.sort((a, b) => b.score - a.score);
     const sliced = results.slice(0, filters?.topK || 5);
     this.searchCache.set(key, sliced);
     this.cacheOrder.push(key);
@@ -83,3 +70,4 @@ export class VectorStoreService {
     return sliced;
   }
 }
+
