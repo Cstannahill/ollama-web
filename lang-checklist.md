@@ -2,7 +2,7 @@
 
 Use this checklist to track progress while implementing the LangChain pipeline described in `lang-implementation.md`.
 
-- [ ] Install `langchain` dependency within `ollama-ui` and commit the lockfile.
+- [x] Install `langchain` dependency within `ollama-ui`.
 - [ ] Create `types/langchain` with:
   - `AgentPipeline.ts`
   - `RetrieverOptions.ts`
