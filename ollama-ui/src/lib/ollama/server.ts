@@ -9,7 +9,8 @@ export const getAvailableModels = cache(async (): Promise<Model[]> => {
       next: { revalidate: 60 * 60 * 24 },
     });
     if (!res.ok) return [];
-    return res.json();
+    const data = await res.json();
+    return Array.isArray(data) ? data : data.models ?? [];
   } catch {
     return [];
   }
@@ -31,7 +32,8 @@ export const getOllamaStatus = cache(async (): Promise<OllamaStatus> => {
       next: { revalidate: 60 },
     });
     const version = res.headers.get("x-ollama-version") || "";
-    const models = res.ok ? await res.json() : [];
+    const data = res.ok ? await res.json() : { models: [] };
+    const models = Array.isArray(data) ? data : data.models ?? [];
     return {
       connected: res.ok,
       version,

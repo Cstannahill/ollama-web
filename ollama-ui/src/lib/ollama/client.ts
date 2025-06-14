@@ -49,7 +49,8 @@ export class OllamaClient extends EventEmitter {
   async listModels(): Promise<Model[]> {
     const response = await fetch(`${this.config.baseUrl}/api/tags`);
     if (!response.ok) throw new Error("Failed to fetch models");
-    return response.json();
+    const data = await response.json();
+    return Array.isArray(data) ? data : data.models ?? [];
   }
 
   async pullModel(
