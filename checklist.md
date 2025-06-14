@@ -29,7 +29,7 @@ For recommended system prompts that produce advanced markdown features, see [doc
 
 - [ ] Comprehensive testing
 - [ ] Accessibility audit
-- [ ] Documentation
+- [x] Documentation
 - [ ] Public release
 
 ### Future Enhancements
