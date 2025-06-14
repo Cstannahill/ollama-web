@@ -7,3 +7,7 @@ export * from "./AgentStatus";
 export * from "./AgentThinking";
 export * from "./AgentSummary";
 export * from "./AgentError";
+export * from "./TokenInfo";
+export * from "./AgentDocs";
+
+

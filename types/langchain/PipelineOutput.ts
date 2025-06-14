@@ -4,3 +4,6 @@ export type PipelineOutput =
   | { type: "chat"; chunk: import("../ollama").ChatResponse }
   | { type: "summary"; message: string }
   | { type: "error"; message: string };
+  | { type: "tokens"; count: number }
+  | { type: "docs"; docs: import("../vector").SearchResult[] }
+  | { type: "chat"; chunk: import("../ollama").ChatResponse };
