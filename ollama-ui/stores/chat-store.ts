@@ -84,6 +84,51 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
       let assistant: Message = { id: crypto.randomUUID(), role: "assistant", content: "" };
       set((state) => ({ messages: [...state.messages, assistant], summary: null, error: null }));
+      try {
+        for await (const out of pipeline.run([...current, userMsg], controller.signal)) {
+          if (out.type === "status") {
+            set({ status: out.message });
+            if (controller.signal.aborted) return;
+            continue;
+          }
+          if (out.type === "docs") {
+            set({ docs: out.docs });
+            continue;
+          }
+          if (out.type === "thinking") {
+            set({ thinking: out.message });
+            continue;
+          }
+          if (out.type === "error") {
+            set({ error: out.message });
+            continue;
+          }
+          if (out.type === "summary") {
+            set({ summary: out.message });
+            continue;
+          }
+          if (out.type === "tokens") {
+            set({ tokens: out.count });
+            continue;
+          }
+          if (out.type === "tool") {
+            set((state) => ({ tools: [...state.tools, { name: out.name, output: out.output }] }));
+            continue;
+          }
+          assistant = { ...assistant, content: assistant.content + out.chunk.message };
+          set((state) => {
+            const msgs = [...state.messages];
+            msgs[msgs.length - 1] = assistant;
+            return { messages: msgs };
+          });
+          if (controller.signal.aborted) return;
+        }
+      } catch (error) {
+        console.error("Pipeline run failed", error);
+        set({ status: "Unexpected error", error: "Pipeline failed" });
+      }
+      set({ isStreaming: false, status: null, thinking: null, tokens: null, docs: [], tools: [], abortController: null });
+
       for await (const out of pipeline.run([...current, userMsg])) {
         if (out.type === "status") {
           set({ status: out.message });

@@ -14,6 +14,7 @@ Enable advanced conversation capabilities with context-aware responses. When act
 - Agent status updates (e.g. "retrieving documents") are shown below the conversation.
 - A collapsible "Thinking" panel displays reasoning details from the pipeline.
 - Token estimates are displayed after each request.
+- Queries are automatically rewritten for improved search quality.
 - Retrieved context documents are listed in a collapsible "Context Documents" section.
 - Status messages show a spinner while streaming is active.
 

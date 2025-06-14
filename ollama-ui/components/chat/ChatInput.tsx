@@ -26,6 +26,9 @@ export const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
         className="flex-1 rounded border p-2"
         value={text}
         onChange={(e) => setText(e.target.value)}
+        aria-label="Message input"
+        rows={1}
+        disabled={disabled || isStreaming}
         disabled={disabled || isStreaming}
         aria-label="Message input"
         rows={1}

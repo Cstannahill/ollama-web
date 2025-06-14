@@ -3,7 +3,7 @@
 ## Feature Purpose and Scope
 
 
-Provide a modular pipeline for retrieval augmented generation (RAG) using LangChain. The pipeline handles embeddings, history trimming, vector search, **context summarisation**, reranking and prompt assembly before streaming results from Ollama. Each step emits progress events so the UI can display the agent's current action. A separate "thinking" output exposes a short summary of the pipeline's reasoning which can be expanded in the chat UI. After the model responds, a lightweight summariser step generates a short overview for quick reference. Retrieved documents are emitted so the interface can show which context was used, and completed conversations are stored back into the vector store for future queries.
+Provide a modular pipeline for retrieval augmented generation (RAG) using LangChain. The pipeline first rewrites queries when helpful and then handles embeddings, history trimming, vector search, **context summarisation**, reranking and prompt assembly before streaming results from Ollama. Each step emits progress events so the UI can display the agent's current action. A separate "thinking" output exposes a short summary of the pipeline's reasoning which can be expanded in the chat UI. After the model responds, a lightweight summariser step generates a short overview for quick reference. Retrieved documents are emitted so the interface can show which context was used, and completed conversations are stored back into the vector store for future queries.
 
 
 
@@ -58,3 +58,5 @@ flowchart TD
 - **External API tools**: integrate web search or data-fetching functions for enriched answers.
 - **Response rating**: solicit quick thumbs-up/down to improve future results.
 - **Automatic summarization**: store brief summaries of long chats for efficient recall.
+- **Self-reflection**: run a quick validation step after the model responds to spot obvious mistakes.
+- **Background re-embedding**: periodically refresh embeddings for stored documents to keep search quality high.
