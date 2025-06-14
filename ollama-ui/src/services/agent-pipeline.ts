@@ -1,19 +1,14 @@
-import {
-  Runnable,
-  RunnableSequence,
-  RunnableLambda,
-} from "@langchain/core/runnables";
+import { Runnable } from "@langchain/core/runnables";
 import { VectorStoreRetriever } from "@/lib/langchain/vector-retriever";
 import { PromptBuilder } from "@/lib/langchain/prompt-builder";
 import { OllamaChat } from "@/lib/langchain/ollama-chat";
 import type {
   ChatSettings,
   Message,
-  ChatResponse,
   SearchResult,
-  Embedding,
   PromptOptions,
 } from "@/types";
+import type { PipelineOutput } from "@/types";
 import { QueryEmbedder } from "@/lib/langchain/query-embedder";
 import { Reranker } from "@/lib/langchain/reranker";
 import { RagAssembler } from "@/lib/langchain/rag-assembler";
@@ -33,39 +28,56 @@ export function createAgentPipeline(config: PipelineConfig) {
   const chat = new OllamaChat(chatSettings);
 
 
-  let chain: Runnable<Message[], unknown> = RunnableSequence.from([
-    RunnableLambda.from(async (messages: Message[]) => {
-      const query = messages[messages.length - 1]?.content ?? "";
-      const embedding = await embedder.embed(query);
-      return { messages, query, embedding } as {
-        messages: Message[];
-        query: string;
-        embedding: Embedding;
-      };
-    }),
-    RunnableLambda.from(async ({ query }: { query: string }) => {
-      const docs = await retriever.getRelevantDocuments(query);
-      return { query, docs } as { query: string; docs: SearchResult[] };
-    }),
-    RunnableLambda.from(async ({ messages, docs }: { messages: Message[]; docs: SearchResult[] }) => {
-      const ranked = await reranker.rerank(docs);
-      const assembled = rag.assemble(messages, ranked);
-      return promptBuilder.build(assembled);
-    }),
-    RunnableLambda.from(async (prompt: string) =>
-      chat.invoke({ model: "llama3", messages: [{ role: "user", content: prompt }] }),
-    ),
-  ]);
+  const tools: Runnable[] = [];
 
   const pipeline = {
     use(step: Runnable<unknown, unknown>) {
-      chain = chain.pipe(step);
+      tools.push(step);
       return this;
     },
-    async *run(messages: Message[]): AsyncGenerator<ChatResponse> {
-      const stream = await chain.stream(messages);
-      for await (const chunk of stream) {
-        yield chunk as ChatResponse;
+    async *run(messages: Message[]): AsyncGenerator<PipelineOutput> {
+      const query = messages[messages.length - 1]?.content ?? "";
+      yield { type: "status", message: "Embedding query" } as const;
+      try {
+        await embedder.embed(query);
+      } catch (error) {
+        console.error("Embedder failed", error);
+        yield { type: "status", message: "Embedding failed" } as const;
+      }
+
+      yield { type: "status", message: "Retrieving documents" } as const;
+      let docs: SearchResult[] = [];
+      try {
+        docs = await retriever.getRelevantDocuments(query);
+      } catch (error) {
+        console.error("Retrieval failed", error);
+        yield { type: "status", message: "Retrieval failed" } as const;
+      }
+
+      yield { type: "status", message: "Reranking results" } as const;
+      let ranked = docs;
+      try {
+        ranked = await reranker.rerank(docs);
+      } catch (error) {
+        console.error("Reranking failed", error);
+      }
+
+      const assembled = rag.assemble(messages, ranked);
+      const prompt = promptBuilder.build(assembled);
+
+      for (const tool of tools) {
+        await tool.invoke(prompt);
+      }
+
+      yield { type: "status", message: "Invoking model" } as const;
+      try {
+        for await (const chunk of chat.invoke({ model: "llama3", messages: [{ role: "user", content: prompt }] })) {
+          yield { type: "chat", chunk } as const;
+        }
+        yield { type: "status", message: "Completed" } as const;
+      } catch (error) {
+        console.error("Chat invocation failed", error);
+        yield { type: "status", message: "Model invocation failed" } as const;
       }
     },
   };

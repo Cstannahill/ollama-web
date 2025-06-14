@@ -10,6 +10,7 @@ type ChatMode = "simple" | "agentic";
 interface ChatState {
   messages: Message[];
   isStreaming: boolean;
+  status: string | null;
   mode: ChatMode;
   setMode: (mode: ChatMode) => void;
   sendMessage: (text: string) => Promise<void>;
@@ -18,12 +19,13 @@ interface ChatState {
 export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],
   isStreaming: false,
+  status: null,
   mode: "simple",
   setMode: (mode) => set({ mode }),
   async sendMessage(text: string) {
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
     const current = get().messages;
-    set({ messages: [...current, userMsg], isStreaming: true });
+    set({ messages: [...current, userMsg], isStreaming: true, status: null });
 
     const {
       vectorStorePath,
@@ -43,15 +45,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
       let assistant: Message = { id: crypto.randomUUID(), role: "assistant", content: "" };
       set((state) => ({ messages: [...state.messages, assistant] }));
-      for await (const chunk of pipeline.run([...current, userMsg])) {
-        assistant = { ...assistant, content: assistant.content + chunk.message };
+      for await (const out of pipeline.run([...current, userMsg])) {
+        if (out.type === "status") {
+          set({ status: out.message });
+          continue;
+        }
+        assistant = { ...assistant, content: assistant.content + out.chunk.message };
         set((state) => {
           const msgs = [...state.messages];
           msgs[msgs.length - 1] = assistant;
           return { messages: msgs };
         });
       }
-      set({ isStreaming: false });
+      set({ isStreaming: false, status: null });
       return;
     }
 
@@ -72,7 +78,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
     }
 
-    set({ isStreaming: false });
+    set({ isStreaming: false, status: null });
   },
 }));
 

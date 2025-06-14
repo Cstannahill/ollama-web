@@ -26,3 +26,6 @@ Use this checklist to track progress while implementing the LangChain pipeline d
 - Next: add unit tests and update documentation.
 
 Progress: Implemented embedding and reranking services. Refactored useChatStore to use LangChain pipeline.
+- Added progress notifier feature with status updates in UI.
+- Added error handling for retriever and chat invocation.
+- Build succeeds but tests currently fail.

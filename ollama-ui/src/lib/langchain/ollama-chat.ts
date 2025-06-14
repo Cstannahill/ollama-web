@@ -11,8 +11,13 @@ export class OllamaChat {
   }
 
   async *invoke(request: ChatRequest): AsyncGenerator<ChatResponse> {
-    for await (const chunk of this.client.chat(request)) {
-      yield chunk;
+    try {
+      for await (const chunk of this.client.chat(request)) {
+        yield chunk;
+      }
+    } catch (error) {
+      console.error("OllamaChat error", error);
+      return;
     }
   }
 }
