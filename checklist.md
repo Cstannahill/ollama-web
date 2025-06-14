@@ -34,10 +34,10 @@ For recommended system prompts that produce advanced markdown features, see [doc
 - [x] Documentation
 
 - [ ] Public release
-- [ ] Responsive navigation header with Light/Dark mode using ThemeProvider
-- [ ] Custom landing page with hero section and floating cards
-- [ ] Remove duplicate pages and clean up routing
-- [ ] Restructure project to match documented directory layout
+- [x] Responsive navigation header with Light/Dark mode using ThemeProvider
+- [x] Custom landing page with hero section and floating cards
+- [x] Remove duplicate pages and clean up routing
+- [x] Restructure project to match documented directory layout
   ```plaintext
   agent-chat-app/
   ├── app/
@@ -96,9 +96,9 @@ For recommended system prompts that produce advanced markdown features, see [doc
   ├── package.json
   └── README.md
   ```
-- [ ] Review service worker caching strategy
-- [ ] Harden CORS configuration in `next.config.ts`
-- [ ] Verify dynamic routes export async functions
+- [x] Review service worker caching strategy
+- [x] Harden CORS configuration in `next.config.ts`
+- [x] Verify dynamic routes export async functions
 
 ### Future Enhancements
 
