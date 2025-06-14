@@ -12,8 +12,6 @@ export class VectorStoreService {
   private docs: Document[] = [];
   private embeddings: Embedding[] = [];
   private searchCache = new Map<string, SearchResult[]>();
-  private searchOrder: string[] = [];
-  private maxCache = 50;
   private cacheOrder: string[] = [];
   private readonly MAX_CACHE = 50;
   private embedder = new EmbeddingService(
@@ -21,6 +19,7 @@ export class VectorStoreService {
   );
 
   async initialize(options: VectorStoreOptions): Promise<void> {
+    if (this.initialized) return;
     void options;
     this.initialized = true;
   }

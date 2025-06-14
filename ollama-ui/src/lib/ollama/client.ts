@@ -47,39 +47,55 @@ export class OllamaClient extends EventEmitter {
   }
 
   async listModels(): Promise<Model[]> {
-    const response = await fetch(`${this.config.baseUrl}/api/tags`);
-    if (!response.ok) throw new Error("Failed to fetch models");
-    const data = await response.json();
-    return Array.isArray(data) ? data : data.models ?? [];
+    try {
+      const response = await fetch(`${this.config.baseUrl}/api/tags`);
+      if (!response.ok) throw new Error("Failed to fetch models");
+      const data = await response.json();
+      return Array.isArray(data) ? data : data.models ?? [];
+    } catch (error) {
+      this.emit("error", error);
+      return [];
+    }
   }
 
   async pullModel(
     name: string,
     onProgress?: (progress: PullProgress) => void,
   ): Promise<void> {
-    const res = await fetch(`${this.config.baseUrl}/api/pull/${name}`);
-    if (!res.ok) throw new Error("Failed to pull model");
-    if (onProgress) {
-      // Placeholder: actual streaming progress would be implemented here
-      onProgress({ name, progress: 100 });
+    try {
+      const res = await fetch(`${this.config.baseUrl}/api/pull/${name}`);
+      if (!res.ok) throw new Error("Failed to pull model");
+      if (onProgress) {
+        onProgress({ name, progress: 100 });
+      }
+    } catch (error) {
+      this.emit("error", error);
     }
   }
 
-  async *chat(request: ChatRequest): AsyncGenerator<ChatResponse> {
+  async *chat(
+    request: ChatRequest,
+    signal?: AbortSignal,
+  ): AsyncGenerator<ChatResponse> {
     const res = await fetch(`${this.config.baseUrl}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(request),
+      signal,
     });
     if (!res.ok) throw new Error("Chat request failed");
 
     const reader = res.body?.getReader();
     if (!reader) return;
     const decoder = new TextDecoder();
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      yield { message: decoder.decode(value) } as ChatResponse;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done || signal?.aborted) break;
+        yield { message: decoder.decode(value) } as ChatResponse;
+      }
+    } finally {
+      reader.releaseLock();
     }
   }
 }
