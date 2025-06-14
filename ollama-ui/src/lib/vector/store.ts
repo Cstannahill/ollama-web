@@ -6,6 +6,7 @@ import type {
   Embedding,
 } from "@/types";
 import { EmbeddingService } from "@/services/embedding-service";
+import { OLLAMA_BASE_URL } from "@/lib/config";
 
 export class VectorStoreService {
   private initialized = false;
@@ -20,9 +21,7 @@ export class VectorStoreService {
   private cacheOrder: string[] = [];
   private readonly MAX_CACHE = 50;
   private readonly CACHE_TTL = 300_000; // 5 minutes
-  private embedder = new EmbeddingService(
-    process.env.OLLAMA_BASE_URL || "http://localhost:11434",
-  );
+  private embedder = new EmbeddingService(OLLAMA_BASE_URL);
 
   async initialize(options: VectorStoreOptions): Promise<void> {
     if (this.initialized) return;

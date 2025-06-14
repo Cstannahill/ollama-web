@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import type { Model } from "@/types";
 import { useModelStore } from "@/stores/model-store";
 
+function getModelGradient(caps?: string[]) {
+  if (!caps || caps.length === 0) return "from-green-600 to-blue-600";
+  if (caps.includes("Vision")) return "from-pink-600 to-purple-600";
+  if (caps.includes("Code")) return "from-yellow-500 to-orange-600";
+  if (caps.includes("Chat")) return "from-green-600 to-blue-600";
+  return "from-indigo-600 to-blue-600";
+}
+
 interface ModelCardProps {
   model: Model;
   onSelect: (model: Model) => void;
@@ -14,7 +22,7 @@ interface ModelCardProps {
 }
 
 export const ModelCard = ({ model, onSelect, isDownloaded }: ModelCardProps) => {
-  const { downloadModel, downloadProgress } = useModelStore();
+  const { downloadModel, downloadProgress, markUsed } = useModelStore();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -25,7 +33,9 @@ export const ModelCard = ({ model, onSelect, isDownloaded }: ModelCardProps) => 
     >
       <Card className="overflow-hidden glass-morphism border-white/10 hover:border-white/20 transition-all duration-300">
         <div className="h-32 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-600 to-blue-600" />
+          <div
+            className={`absolute inset-0 bg-gradient-to-br ${getModelGradient(model.capabilities)}`}
+          />
           <div className="absolute inset-0 bg-black/20" />
           <div className="absolute top-2 right-2 flex gap-1">
             {model.capabilities?.map((cap) => (
@@ -58,7 +68,13 @@ export const ModelCard = ({ model, onSelect, isDownloaded }: ModelCardProps) => 
           </div>
           <div className="flex gap-2">
             {isDownloaded ? (
-              <Button className="flex-1" onClick={() => onSelect(model)}>
+              <Button
+                className="flex-1"
+                onClick={() => {
+                  markUsed(model.id);
+                  onSelect(model);
+                }}
+              >
                 <Play className="w-4 h-4 mr-1" aria-hidden /> Launch
               </Button>
             ) : (

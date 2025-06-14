@@ -1,12 +1,13 @@
 import type { ChatRequest, ChatResponse, ChatSettings } from "@/types";
 import { OllamaClient } from "@/lib/ollama/client";
+import { OLLAMA_BASE_URL } from "@/lib/config";
 
 export class OllamaChat {
   private client: OllamaClient;
 
   constructor(private settings: ChatSettings & { baseUrl?: string }) {
     this.client = new OllamaClient({
-      baseUrl: settings.baseUrl || "http://localhost:11434",
+      baseUrl: settings.baseUrl || OLLAMA_BASE_URL,
     });
   }
 

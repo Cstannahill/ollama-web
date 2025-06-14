@@ -1,7 +1,8 @@
 import { cache } from "react";
 import type { Model, ModelStats, OllamaStatus } from "@/types";
+import { OLLAMA_BASE_URL } from "@/lib/config";
 
-const BASE_URL = process.env.OLLAMA_BASE_URL || "http://localhost:11434";
+const BASE_URL = OLLAMA_BASE_URL;
 
 export const getAvailableModels = cache(async (): Promise<Model[]> => {
   try {
