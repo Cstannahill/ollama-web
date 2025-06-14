@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useChatStore } from "@/stores/chat-store";
 
 interface ChatInputProps {
   onSend: (text: string) => void;
@@ -8,6 +9,7 @@ interface ChatInputProps {
 
 export const ChatInput = ({ onSend }: ChatInputProps) => {
   const [text, setText] = useState("");
+  const isStreaming = useChatStore((s) => s.isStreaming);
 
   return (
     <form
@@ -24,8 +26,11 @@ export const ChatInput = ({ onSend }: ChatInputProps) => {
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={1}
+        disabled={isStreaming}
       />
-      <Button type="submit">Send</Button>
+      <Button type="submit" disabled={isStreaming}>
+        {isStreaming ? "..." : "Send"}
+      </Button>
     </form>
   );
 };

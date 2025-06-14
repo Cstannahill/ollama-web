@@ -7,15 +7,17 @@ import { ThemeToggle, Badge } from "@/components/ui";
 import { ExportMenu } from "./ExportMenu";
 import { AgentStatus } from "./AgentStatus";
 import { AgentThinking } from "./AgentThinking";
+import { TokenInfo } from "./TokenInfo";
 import { AgentDocs } from "./AgentDocs";
 
+
 export const ChatInterface = () => {
-  const { messages, isStreaming, sendMessage, mode, status } = useChatStore();
+  const { messages, isStreaming, sendMessage, mode, status, tokens } = useChatStore();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, status, tokens]);
 
   return (
     <div className="flex flex-col h-screen">
@@ -37,6 +39,7 @@ export const ChatInterface = () => {
         <AgentStatus />
         <AgentDocs />
         <AgentThinking />
+        <TokenInfo />
         <div ref={bottomRef} />
       </div>
       <ChatInput onSend={sendMessage} />
