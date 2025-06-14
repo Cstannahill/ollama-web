@@ -46,12 +46,12 @@ export const ModelCard = ({ model, onSelect, isDownloaded }: ModelCardProps) => 
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Cpu className="w-3 h-3" />
+              <Cpu className="w-3 h-3" aria-hidden />
               {model.size}
             </span>
             {model.performance && (
               <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
+                <Clock className="w-3 h-3" aria-hidden />
                 {model.performance}
               </span>
             )}
@@ -59,7 +59,7 @@ export const ModelCard = ({ model, onSelect, isDownloaded }: ModelCardProps) => 
           <div className="flex gap-2">
             {isDownloaded ? (
               <Button className="flex-1" onClick={() => onSelect(model)}>
-                <Play className="w-4 h-4 mr-1" /> Launch
+                <Play className="w-4 h-4 mr-1" aria-hidden /> Launch
               </Button>
             ) : (
               <Button
@@ -71,13 +71,13 @@ export const ModelCard = ({ model, onSelect, isDownloaded }: ModelCardProps) => 
                   <span>{Math.round(downloadProgress[model.id])}%</span>
                 ) : (
                   <>
-                    <Download className="w-4 h-4 mr-1" /> Download
+                    <Download className="w-4 h-4 mr-1" aria-hidden /> Download
                   </>
                 )}
               </Button>
             )}
-            <Button variant="outline" size="icon">
-              <Info className="w-4 h-4" />
+            <Button variant="outline" size="icon" aria-label="Model info">
+              <Info className="w-4 h-4" aria-hidden />
             </Button>
           </div>
         </div>

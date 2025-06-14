@@ -52,7 +52,7 @@ export const AdvancedMarkdown = ({
                 onClick={() => exportMarkdown(content, "markdown")}
                 className="p-1 text-gray-400 hover:text-white"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4" aria-hidden />
               </button>
               <button
                 type="button"
@@ -60,7 +60,7 @@ export const AdvancedMarkdown = ({
                 onClick={() => exportMarkdown(content, "html")}
                 className="p-1 text-gray-400 hover:text-white"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4" aria-hidden />
               </button>
               <button
                 type="button"
@@ -68,7 +68,7 @@ export const AdvancedMarkdown = ({
                 onClick={() => exportMarkdown(content, "pdf")}
                 className="p-1 text-gray-400 hover:text-white"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4" aria-hidden />
               </button>
             </>
           )}
@@ -84,7 +84,7 @@ export const AdvancedMarkdown = ({
               }}
               className="p-1 text-gray-400 hover:text-white"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-4 h-4" aria-hidden />
             </button>
           )}
         </div>

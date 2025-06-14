@@ -25,6 +25,7 @@ export const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
         value={text}
         onChange={(e) => setText(e.target.value)}
         disabled={disabled}
+        aria-label="Message input"
         rows={1}
       />
       <span className="text-xs text-gray-500 self-end pb-1">

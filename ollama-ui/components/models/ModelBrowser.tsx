@@ -82,6 +82,7 @@ export const ModelBrowser = ({ models, onSelect }: Props) => {
       <div className="flex flex-wrap gap-4 items-end">
         <input
           placeholder="Search models"
+          aria-label="Search models"
           className="flex-1 border px-2 py-1 rounded-md bg-background"
           value={filters.query}
           onChange={(e) => setFilters({ ...filters, query: e.target.value })}
@@ -104,6 +105,7 @@ export const ModelBrowser = ({ models, onSelect }: Props) => {
             type="number"
             className="w-16 border px-1 py-0.5 rounded-md"
             value={filters.sizeRange?.[0] || 0}
+            aria-label="Minimum size in MB"
             onChange={(e) =>
               setFilters({
                 ...filters,
@@ -116,6 +118,7 @@ export const ModelBrowser = ({ models, onSelect }: Props) => {
         <select
           className="border px-2 py-1 rounded-md"
           value={filters.sort}
+          aria-label="Sort models"
           onChange={(e) =>
             setFilters({ ...filters, sort: e.target.value as ModelFilters["sort"] })
           }

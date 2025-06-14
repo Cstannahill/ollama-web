@@ -52,7 +52,11 @@ export const ChatInterface = () => {
         </div>
       </div>
       {isStreaming && <Progress value={progress} />}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+      <div
+        className="flex-1 overflow-y-auto p-4 flex flex-col gap-2"
+        role="log"
+        aria-live="polite"
+      >
         {messages.map((m, i) => (
           <ChatMessage key={i} message={m} />
         ))}

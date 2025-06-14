@@ -15,7 +15,7 @@ export const ExportMenu = () => {
         onClick={() => exportConversation(messages, "markdown")}
         aria-label="Export as Markdown"
       >
-        <Download className="w-4 h-4" />
+        <Download className="w-4 h-4" aria-hidden />
       </Button>
       <Button
         size="icon"
@@ -23,7 +23,7 @@ export const ExportMenu = () => {
         onClick={() => exportConversation(messages, "pdf")}
         aria-label="Export as PDF"
       >
-        <Download className="w-4 h-4" />
+        <Download className="w-4 h-4" aria-hidden />
       </Button>
       <Button
         size="icon"
@@ -31,7 +31,7 @@ export const ExportMenu = () => {
         onClick={() => exportConversation(messages, "json")}
         aria-label="Export as JSON"
       >
-        <Download className="w-4 h-4" />
+        <Download className="w-4 h-4" aria-hidden />
       </Button>
     </div>
   );
