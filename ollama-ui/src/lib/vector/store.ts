@@ -12,6 +12,8 @@ export class VectorStoreService {
   private docs: Document[] = [];
   private embeddings: Embedding[] = [];
   private searchCache = new Map<string, SearchResult[]>();
+  private searchOrder: string[] = [];
+  private maxCache = 50;
   private cacheOrder: string[] = [];
   private readonly MAX_CACHE = 50;
   private embedder = new EmbeddingService(
@@ -37,6 +39,12 @@ export class VectorStoreService {
 
   async search(query: string, filters?: SearchFilters): Promise<SearchResult[]> {
     if (!this.initialized) throw new Error("Vector store not initialized");
+    const cacheKey = query + JSON.stringify(filters);
+    const cached = this.searchCache.get(cacheKey);
+    if (cached) {
+      this.searchOrder = this.searchOrder.filter((k) => k !== cacheKey);
+      this.searchOrder.push(cacheKey);
+
     const key = JSON.stringify({ query, filters });
     const cached = this.searchCache.get(key);
     if (cached) {
@@ -56,6 +64,15 @@ export class VectorStoreService {
       return { id: d.id, text: d.text, metadata: d.metadata, score };
     });
     results.sort((a, b) => b.score - a.score);
+    const top = results.slice(0, filters?.topK || 5);
+    this.searchCache.set(cacheKey, top);
+    this.searchOrder.push(cacheKey);
+    if (this.searchOrder.length > this.maxCache) {
+      const old = this.searchOrder.shift();
+      if (old) this.searchCache.delete(old);
+    }
+    return top;
+
     const sliced = results.slice(0, filters?.topK || 5);
     this.searchCache.set(key, sliced);
     this.cacheOrder.push(key);

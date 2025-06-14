@@ -26,21 +26,14 @@ export const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
         className="flex-1 rounded border p-2"
         value={text}
         onChange={(e) => setText(e.target.value)}
-        disabled={disabled}
+        disabled={disabled || isStreaming}
         aria-label="Message input"
         rows={1}
-        disabled={isStreaming}
       />
-
-      <Button type="submit" disabled={isStreaming}>
+      <Button type="submit" disabled={disabled || isStreaming}>
         {isStreaming ? "..." : "Send"}
-
-      <span className="text-xs text-gray-500 self-end pb-1">
-        {text.length}
-      </span>
-      <Button type="submit" disabled={disabled}>
-        Send
       </Button>
+      <span className="text-xs text-gray-500 self-end pb-1">{text.length}</span>
     </form>
   );
 };

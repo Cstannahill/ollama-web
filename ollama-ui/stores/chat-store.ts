@@ -19,8 +19,6 @@ interface ChatState {
   tokens: number | null;
   docs: SearchResult[];
   tools: { name: string; output: string }[];
-
-  error: string | null;
   abortController: AbortController | null;
 
   mode: ChatMode;
@@ -41,8 +39,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
   tokens: null,
   docs: [],
   tools: [],
-
-  error: null,
   abortController: null,
 
   mode: "simple",
@@ -126,25 +122,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
       set({ isStreaming: false, status: null, thinking: null, tokens: null, docs: [], tools: [] });
       set((state) => ({ messages: [...state.messages, assistant] }));
-      try {
-        for await (const out of pipeline.run([...current, userMsg], controller.signal)) {
-          if (out.type === "status") {
-            set({ status: out.message });
-            if (controller.signal.aborted) return;
-            continue;
-          }
-          assistant = { ...assistant, content: assistant.content + out.chunk.message };
-          set((state) => {
-            const msgs = [...state.messages];
-            msgs[msgs.length - 1] = assistant;
-            return { messages: msgs };
-          });
-          if (controller.signal.aborted) return;
-        }
-      } catch (error) {
-        console.error("Pipeline run failed", error);
-        set({ status: "Unexpected error", error: "Pipeline failed" });
-      }
       set({ isStreaming: false, status: null, abortController: null });
       return;
     }
