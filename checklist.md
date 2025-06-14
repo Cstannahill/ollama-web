@@ -34,6 +34,71 @@ For recommended system prompts that produce advanced markdown features, see [doc
 - [x] Documentation
 
 - [ ] Public release
+- [ ] Responsive navigation header with Light/Dark mode using ThemeProvider
+- [ ] Custom landing page with hero section and floating cards
+- [ ] Remove duplicate pages and clean up routing
+- [ ] Restructure project to match documented directory layout
+  ```plaintext
+  agent-chat-app/
+  ├── app/
+  │   ├── layout.tsx
+  │   ├── page.tsx
+  │   ├── chat/
+  │   │   ├── layout.tsx
+  │   │   ├── page.tsx
+  │   │   ├── [threadId]/
+  │   │   │   ├── page.tsx
+  │   │   │   └── loading.tsx
+  │   │   └── new/
+  │   │       └── page.tsx
+  │   └── api/
+  │       ├── chat/
+  │       │   ├── route.ts
+  │       │   └── history/route.ts
+  │       ├── agents/
+  │       │   ├── route.ts
+  │       │   └── [agentId]/route.ts
+  │       └── threads/
+  │           ├── route.ts
+  │           └── [threadId]/route.ts
+  ├── components/
+  │   ├── ui/
+  │   │   ├── ChatMessage.tsx
+  │   │   ├── ChatInput.tsx
+  │   │   ├── ChatSidebar.tsx
+  │   │   └── AgentSelector.tsx
+  │   ├── layout/
+  │   │   └── MainShell.tsx
+  │   └── assistant/
+  │       ├── MessageComposer.tsx
+  │       └── StreamingResponse.tsx
+  ├── lib/
+  │   ├── assistant/
+  │   │   ├── index.ts
+  │   │   ├── agents.ts
+  │   │   ├── threads.ts
+  │   │   ├── schema.ts
+  │   │   └── stream.ts
+  │   ├── db/
+  │   │   ├── index.ts
+  │   │   └── schema.ts
+  │   └── utils/
+  │       └── format.ts
+  ├── public/
+  │   └── icons/
+  ├── styles/
+  │   └── globals.css
+  ├── types/
+  │   └── index.ts
+  ├── middleware.ts
+  ├── tailwind.config.ts
+  ├── next.config.js
+  ├── package.json
+  └── README.md
+  ```
+- [ ] Review service worker caching strategy
+- [ ] Harden CORS configuration in `next.config.ts`
+- [ ] Verify dynamic routes export async functions
 
 ### Future Enhancements
 
