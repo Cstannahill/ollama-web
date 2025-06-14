@@ -1,13 +1,9 @@
 import { create } from "zustand";
 import type { Message } from "@/types";
-
-
 import { OllamaClient } from "@/lib/ollama/client";
-
 import { vectorStore } from "@/lib/vector";
 import { createAgentPipeline } from "@/services/agent-pipeline";
 import { useSettingsStore } from "./settings-store";
-import { createAgentPipeline } from "@/services/agent-pipeline";
 
 type ChatMode = "simple" | "agentic";
 
@@ -19,7 +15,6 @@ interface ChatState {
   sendMessage: (text: string) => Promise<void>;
 }
 
-
 export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],
   isStreaming: false,
@@ -29,18 +24,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
     const current = get().messages;
     set({ messages: [...current, userMsg], isStreaming: true });
-
-
-    const { vectorStorePath, chatSettings } = useSettingsStore.getState();
-    if (get().mode === "agentic" && vectorStorePath && !(vectorStore as any).initialized) {
-      await vectorStore.initialize({ storagePath: vectorStorePath });
-    }
-
-    const pipeline = createAgentPipeline({ ...chatSettings });
-    let assistant: Message = { id: crypto.randomUUID(), role: "assistant", content: "" };
-    set((state) => ({ messages: [...state.messages, assistant] }));
-
-    for await (const chunk of pipeline.run([...current, userMsg])) {
 
     const {
       vectorStorePath,
@@ -81,7 +64,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
       model: "llama3",
       messages: [...current, userMsg],
     })) {
-
       assistant = { ...assistant, content: assistant.content + chunk.message };
       set((state) => {
         const msgs = [...state.messages];
@@ -93,3 +75,4 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({ isStreaming: false });
   },
 }));
+

@@ -19,13 +19,10 @@ Use this checklist to track progress while implementing the LangChain pipeline d
 - [x] Add unit tests for wrappers and the pipeline.
 - [x] Create `docs/langchain/overview.md` and update existing diagrams to include the new pipeline.
 - [ ] Run `pnpm test` and `pnpm build` to verify before opening a PR.
-- [ ] Add unit tests for wrappers and the pipeline.
-- [ ] Create `docs/langchain/overview.md` and update existing diagrams to include the new pipeline.
-- [ ] Run `pnpm test` and `pnpm build` to verify before opening a PR.
 
 ## Progress Notes
 - Implemented embedder, reranker, and RAG assembler modules.
 - Refactored useChatStore to run createAgentPipeline.
 - Next: add unit tests and update documentation.
 
-\nProgress: Implemented embedding and reranking services. Refactored useChatStore to use LangChain pipeline.
+Progress: Implemented embedding and reranking services. Refactored useChatStore to use LangChain pipeline.
