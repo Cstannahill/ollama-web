@@ -14,6 +14,7 @@ Use this checklist to track progress while implementing the LangChain pipeline d
 - [x] Implement `VectorStoreRetriever` in `src/lib/langchain/vector-retriever.ts`.
 - [x] Implement `PromptBuilder` in `src/lib/langchain/prompt-builder.ts`.
 - [x] Create `AgentPipeline` service in `src/services/agent-pipeline.ts` exposing `.use()` for additional steps.
+- [ ] Ensure agentic pipeline flow includes at least, but not limited to: Embedding, Reranking, RAG, Custom instructions, and all other features expected from a high quality agentic AI pipeline.
 - [ ] Refactor `useChatStore` to create and run the pipeline instead of calling `OllamaClient` directly.
 - [ ] Add unit tests for wrappers and the pipeline.
 - [ ] Create `docs/langchain/overview.md` and update existing diagrams to include the new pipeline.
