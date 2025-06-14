@@ -13,6 +13,7 @@ Provide a rich interface to browse and manage models available from the local Ol
 - Size range slider filters models by download size.
 - Sort options include Popular, Recent, Size and Performance.
 - Download action triggers `OllamaClient.pullModel()` (not yet implemented in UI).
+- A **Downloaded Models** tab lists locally stored models with usage statistics and bulk delete actions.
 
 ## Primary Types
 

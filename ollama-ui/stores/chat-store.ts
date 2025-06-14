@@ -5,6 +5,7 @@ import { vectorStore } from "@/lib/vector";
 import { createAgentPipeline } from "@/services/agent-pipeline";
 import { useSettingsStore } from "./settings-store";
 import { MARKDOWN_INSTRUCTIONS } from "@/lib/markdown-prompts";
+import { OLLAMA_BASE_URL } from "@/lib/config";
 
 type ChatMode = "simple" | "agentic";
 
@@ -133,7 +134,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
 
     const client = new OllamaClient({
-      baseUrl: process.env.OLLAMA_BASE_URL || "http://localhost:11434",
+      baseUrl: OLLAMA_BASE_URL,
     });
     let assistant: Message = { id: crypto.randomUUID(), role: "assistant", content: "" };
     set((state) => ({ messages: [...state.messages, assistant] }));

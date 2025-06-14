@@ -10,6 +10,7 @@ Ollama.
 ## Core Flows and UI Touchpoints
 
 - Create an `OllamaClient` with a base URL.
+- The base URL is centralized in `src/lib/config.ts`.
 - Automatically reconnect on connection loss.
 - Expose methods for model queries and chat streaming.
 - Downstream features such as the model browser and chat UI rely on this service.
