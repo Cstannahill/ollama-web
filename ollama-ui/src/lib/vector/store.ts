@@ -11,9 +11,15 @@ export class VectorStoreService {
   private initialized = false;
   private docs: Document[] = [];
   private embeddings: Embedding[] = [];
-  private searchCache = new Map<string, SearchResult[]>();
+
+  private searchCache = new Map<
+    string,
+    { results: SearchResult[]; time: number }
+  >();
+
   private cacheOrder: string[] = [];
   private readonly MAX_CACHE = 50;
+  private readonly CACHE_TTL = 300_000; // 5 minutes
   private embedder = new EmbeddingService(
     process.env.OLLAMA_BASE_URL || "http://localhost:11434",
   );
@@ -40,10 +46,10 @@ export class VectorStoreService {
     if (!this.initialized) throw new Error("Vector store not initialized");
     const key = JSON.stringify({ query, filters });
     const cached = this.searchCache.get(key);
-    if (cached) {
+    if (cached && Date.now() - cached.time < this.CACHE_TTL) {
       this.cacheOrder = this.cacheOrder.filter((k) => k !== key);
       this.cacheOrder.push(key);
-      return cached;
+      return cached.results;
     }
 
     const qEmb = await this.embedder.generateEmbedding(
@@ -60,7 +66,7 @@ export class VectorStoreService {
 
     results.sort((a, b) => b.score - a.score);
     const sliced = results.slice(0, filters?.topK || 5);
-    this.searchCache.set(key, sliced);
+    this.searchCache.set(key, { results: sliced, time: Date.now() });
     this.cacheOrder.push(key);
     if (this.cacheOrder.length > this.MAX_CACHE) {
       const oldest = this.cacheOrder.shift();
