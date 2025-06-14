@@ -12,6 +12,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
     "@lancedb/lancedb": "^0.20.0",
+    "@langchain/core": "^0.3.58",
     "@monaco-editor/react": "^4.7.0",
     "@tanstack/react-query": "^5.80.7",
     "@types/prismjs": "^1.26.5",
