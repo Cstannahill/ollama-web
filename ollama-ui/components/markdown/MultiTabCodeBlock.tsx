@@ -98,15 +98,16 @@ export const MultiTabCodeBlock = ({ markdown }: MultiTabCodeBlockProps) => {
           aria-label="Toggle search"
           className="p-2 text-gray-400 hover:text-white"
         >
-          <Search className="w-4 h-4" />
+          <Search className="w-4 h-4" aria-hidden />
         </button>
       </div>
       {showSearch && (
         <div className="border-b border-gray-700 bg-gray-800 p-2 flex items-center gap-2">
-          <Search className="w-4 h-4 text-gray-400" />
+          <Search className="w-4 h-4 text-gray-400" aria-hidden />
           <input
             type="text"
             placeholder="Search..."
+            aria-label="Search code"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="flex-1 bg-transparent outline-none text-sm"

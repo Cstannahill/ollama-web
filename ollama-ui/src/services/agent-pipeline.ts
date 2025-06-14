@@ -15,24 +15,31 @@ import { Reranker } from "@/lib/langchain/reranker";
 import { RagAssembler } from "@/lib/langchain/rag-assembler";
 import { ResponseSummarizer } from "@/lib/langchain/response-summarizer";
 import { HistoryTrimmer } from "@/lib/langchain/history-trimmer";
+import { ContextSummarizer } from "@/lib/langchain/context-summarizer";
+import { ResponseLogger } from "@/lib/langchain/response-logger";
 
 
 export interface PipelineConfig extends ChatSettings {
   embeddingModel?: string | null;
   rerankingModel?: string | null;
+  summaryLength?: number;
   promptOptions?: PromptOptions;
   historyLimit?: number;
 }
 export function createAgentPipeline(config: PipelineConfig) {
-  const { embeddingModel, rerankingModel, promptOptions, historyLimit, ...chatSettings } = config;
+  const { embeddingModel, rerankingModel, promptOptions, summaryLength, historyLimit, ...chatSettings } = config;
+
   const retriever = new VectorStoreRetriever();
   const embedder = new QueryEmbedder(embeddingModel);
   const reranker = new Reranker(rerankingModel);
   const rag = new RagAssembler();
   const trimmer = new HistoryTrimmer(historyLimit);
   const promptBuilder = new PromptBuilder(promptOptions);
+  const summarizer = new ContextSummarizer(summaryLength);
   const chat = new OllamaChat(chatSettings);
   const summarizer = new ResponseSummarizer();
+  const logger = new ResponseLogger();
+
 
 
   const tools: Runnable[] = [];
@@ -42,17 +49,16 @@ export function createAgentPipeline(config: PipelineConfig) {
       tools.push(step);
       return this;
     },
-    async *run(messages: Message[]): AsyncGenerator<PipelineOutput> {
-      const trimmed = trimmer.trim(messages);
-      const query = trimmed[trimmed.length - 1]?.content ?? "";
+
+    async *run(messages: Message[], signal?: AbortSignal): AsyncGenerator<PipelineOutput> {
+      const isAborted = () => signal?.aborted;
+      const query = messages[messages.length - 1]?.content ?? "";
       if (!query.trim()) {
-        yield { type: "status", message: "Query is empty" } as const;
+        yield { type: "status", message: "Query empty" } as const;
         return;
       }
-      if (trimmed.length !== messages.length) {
-        yield { type: "status", message: "History trimmed" } as const;
-      }
       yield { type: "status", message: "Embedding query" } as const;
+      if (isAborted()) return;
       try {
         await embedder.embed(query);
       } catch (error) {
@@ -60,12 +66,16 @@ export function createAgentPipeline(config: PipelineConfig) {
         yield { type: "status", message: "Embedding failed" } as const;
       }
 
+      if (isAborted()) return;
+      
       yield { type: "status", message: "Retrieving documents" } as const;
+      if (isAborted()) return;
       let docs: SearchResult[] = [];
       try {
         docs = await retriever.getRelevantDocuments(query);
       } catch (error) {
         console.error("Retrieval failed", error);
+
 
         yield { type: "error", message: "Retrieval failed" } as const;
 
@@ -77,16 +87,30 @@ export function createAgentPipeline(config: PipelineConfig) {
           return;
         }
         yield { type: "status", message: "Retrieval failed" } as const;
+
+        yield { type: "status", message: "Retrieval failed, retrying" } as const;
+        if (!isAborted()) {
+          try {
+            docs = await retriever.getRelevantDocuments(query);
+          } catch (err) {
+            console.error("Retrieval retry failed", err);
+            yield { type: "status", message: "Retrieval failed" } as const;
+          }
+        }
       }
       yield { type: "docs", docs } as const;
 
+      if (isAborted()) return;
+
       yield { type: "status", message: "Reranking results" } as const;
+      if (isAborted()) return;
       let ranked = docs;
       try {
         ranked = await reranker.rerank(docs);
       } catch (error) {
         console.error("Reranking failed", error);
       }
+
 
       let assembled: Message[] = [];
       try {
@@ -97,6 +121,24 @@ export function createAgentPipeline(config: PipelineConfig) {
       }
       let prompt = "";
       try {
+
+      if (isAborted()) return;
+      yield { type: "status", message: "Summarizing context" } as const;
+      if (isAborted()) return;
+      let summarized = ranked;
+      try {
+        summarized = await summarizer.summarize(ranked);
+      } catch (error) {
+        console.error("Summarization failed", error);
+        yield { type: "status", message: "Summarization failed" } as const;
+      }
+
+      if (isAborted()) return;
+      yield { type: "status", message: "Building prompt" } as const;
+      if (isAborted()) return;
+      let prompt = "";
+      try {
+        const assembled = rag.assemble(messages, summarized);
         prompt = promptBuilder.build(assembled);
       } catch (error) {
         console.error("Prompt build failed", error);
@@ -108,6 +150,9 @@ export function createAgentPipeline(config: PipelineConfig) {
       const tokenEstimate = prompt.split(/\s+/).filter(Boolean).length;
       yield { type: "tokens", count: tokenEstimate } as const;
 
+        return;
+      }
+
       for (const tool of tools) {
         try {
           const output = await tool.invoke(prompt);
@@ -118,10 +163,16 @@ export function createAgentPipeline(config: PipelineConfig) {
         }
       }
 
+      if (isAborted()) return;
+
       yield { type: "status", message: "Invoking model" } as const;
+      if (isAborted()) return;
       try {
         let full = "";
         for await (const chunk of chat.invoke({ model: "llama3", messages: [{ role: "user", content: prompt }] })) {
+
+          if (isAborted()) return;
+
           full += chunk.message;
           yield { type: "chat", chunk } as const;
         }
@@ -134,6 +185,7 @@ export function createAgentPipeline(config: PipelineConfig) {
         }
         yield { type: "status", message: "Completed" } as const;
         try {
+
           const docsToSave = ranked.map((d) => ({
             id: crypto.randomUUID(),
             text: d.text,
@@ -142,6 +194,11 @@ export function createAgentPipeline(config: PipelineConfig) {
         } catch (error) {
           console.error("Conversation save failed", error);
           yield { type: "status", message: "Failed to save conversation" } as const;
+
+          await logger.log([...messages, { id: crypto.randomUUID(), role: "assistant", content: full }]);
+        } catch (err) {
+          console.error("Logger failed", err);
+
         }
       } catch (error) {
         console.error("Chat invocation failed", error);

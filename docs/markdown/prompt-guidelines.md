@@ -3,7 +3,7 @@
 These guidelines explain how system prompts should direct the LLM to output markdown that the application can render with rich features.
 
 ## Callouts
-- Use the standard blockquote syntax (`>`) and prefix with **TIP**, **INFO**, or **WARNING** to create callout boxes.
+- Use the standard blockquote syntax (`>`) and prefix with **TIP**, **INFO**, **WARNING**, or **NOTE** to create callout boxes.
 - Example:
   ```markdown
   > **TIP**: Remember to check your API key.
@@ -31,5 +31,33 @@ These guidelines explain how system prompts should direct the LLM to output mark
       A --> B
   ```
   ```
+
+## Collapsible Sections
+- Wrap optional content in `<details>` with a `<summary>` title so it can be collapsed.
+```markdown
+<details>
+<summary>More info</summary>
+
+Hidden text
+
+</details>
+```
+
+## Footnotes
+- Use GitHub footnote syntax to reference sources.
+```markdown
+Here is a fact.[^1]
+
+[^1]: Source citation.
+```
+
+## Code Line Highlighting
+- Emphasize lines using the `{highlight: [n]}` metadata on fenced code blocks.
+```markdown
+```ts {highlight: [2]}
+const a = 1;
+const b = 2;
+```
+```
 
 See the [overview](./overview.md) for component details.

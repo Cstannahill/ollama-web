@@ -11,8 +11,13 @@ export const ChatSettings = () => {
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
-      <Button variant="outline" size="icon" onClick={() => setOpen((o) => !o)}>
-        <SettingsIcon className="w-4 h-4" />
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Chat settings"
+      >
+        <SettingsIcon className="w-4 h-4" aria-hidden />
       </Button>
       {open && (
         <div className="absolute right-0 mt-2 w-64 p-4 border rounded bg-background shadow">

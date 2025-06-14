@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { useChatStore } from "@/stores/chat-store";
-import { ThemeToggle, Badge } from "@/components/ui";
+import { ThemeToggle, Badge, Button, Spinner, Progress, Toast } from "@/components/ui";
 import { ExportMenu } from "./ExportMenu";
 import { AgentStatus } from "./AgentStatus";
 import { AgentThinking } from "./AgentThinking";
@@ -15,8 +15,20 @@ import { AgentToolOutput } from "./AgentToolOutput";
 
 
 export const ChatInterface = () => {
-  const { messages, isStreaming, sendMessage, mode, status, tokens } = useChatStore();
+  const { messages, isStreaming, sendMessage, stop, mode, status, tokens, error, setError } =
+    useChatStore();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const statusOrder = [
+    "Embedding query",
+    "Retrieving documents",
+    "Reranking results",
+    "Summarizing context",
+    "Building prompt",
+    "Invoking model",
+    "Completed",
+  ];
+  const idx = statusOrder.indexOf(status ?? "");
+  const progress = idx >= 0 ? ((idx + 1) / statusOrder.length) * 100 : 0;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -30,11 +42,28 @@ export const ChatInterface = () => {
           <Badge>{mode} mode</Badge>
         </div>
         <div className="flex items-center gap-2">
-          {status && <span className="text-xs italic text-gray-500">{status}</span>}
+          {status && (
+            <span
+              className={`text-xs italic flex items-center gap-1 ${status.toLowerCase().includes('failed') ? 'text-red-500' : status === 'Completed' ? 'text-green-600' : 'text-gray-500'}`}
+            >
+              {isStreaming && <Spinner className="w-3 h-3" />}
+              {status}
+            </span>
+          )}
+          {isStreaming && (
+            <Button variant="outline" size="icon" onClick={stop}>
+              Stop
+            </Button>
+          )}
           <ThemeToggle />
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+      {isStreaming && <Progress value={progress} />}
+      <div
+        className="flex-1 overflow-y-auto p-4 flex flex-col gap-2"
+        role="log"
+        aria-live="polite"
+      >
         {messages.map((m, i) => (
           <ChatMessage key={i} message={m} />
         ))}
@@ -48,7 +77,8 @@ export const ChatInterface = () => {
         <TokenInfo />
         <div ref={bottomRef} />
       </div>
-      <ChatInput onSend={sendMessage} />
+      <ChatInput onSend={sendMessage} disabled={isStreaming} />
+      {error && <Toast message={error} onDismiss={() => setError(null)} />}
     </div>
   );
 };

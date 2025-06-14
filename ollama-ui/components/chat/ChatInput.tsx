@@ -5,9 +5,10 @@ import { useChatStore } from "@/stores/chat-store";
 
 interface ChatInputProps {
   onSend: (text: string) => void;
+  disabled?: boolean;
 }
 
-export const ChatInput = ({ onSend }: ChatInputProps) => {
+export const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
   const [text, setText] = useState("");
   const isStreaming = useChatStore((s) => s.isStreaming);
 
@@ -25,11 +26,20 @@ export const ChatInput = ({ onSend }: ChatInputProps) => {
         className="flex-1 rounded border p-2"
         value={text}
         onChange={(e) => setText(e.target.value)}
+        disabled={disabled}
+        aria-label="Message input"
         rows={1}
         disabled={isStreaming}
       />
+
       <Button type="submit" disabled={isStreaming}>
         {isStreaming ? "..." : "Send"}
+
+      <span className="text-xs text-gray-500 self-end pb-1">
+        {text.length}
+      </span>
+      <Button type="submit" disabled={disabled}>
+        Send
       </Button>
     </form>
   );

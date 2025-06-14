@@ -4,6 +4,7 @@ import { OllamaClient } from "@/lib/ollama/client";
 import { vectorStore } from "@/lib/vector";
 import { createAgentPipeline } from "@/services/agent-pipeline";
 import { useSettingsStore } from "./settings-store";
+import { MARKDOWN_INSTRUCTIONS } from "@/lib/markdown-prompts";
 
 type ChatMode = "simple" | "agentic";
 
@@ -11,33 +12,56 @@ interface ChatState {
   messages: Message[];
   isStreaming: boolean;
   status: string | null;
+
   thinking: string | null;
   summary: string | null;
   error: string | null;
   tokens: number | null;
   docs: SearchResult[];
   tools: { name: string; output: string }[];
+
+  error: string | null;
+  abortController: AbortController | null;
+
   mode: ChatMode;
   setMode: (mode: ChatMode) => void;
+  setError: (msg: string | null) => void;
   sendMessage: (text: string) => Promise<void>;
+  stop: () => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],
   isStreaming: false,
   status: null,
+
   thinking: null,
   summary: null,
   error: null,
   tokens: null,
   docs: [],
   tools: [],
+
+  error: null,
+  abortController: null,
+
   mode: "simple",
   setMode: (mode) => set({ mode }),
+  setError: (msg) => set({ error: msg }),
   async sendMessage(text: string) {
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
     const current = get().messages;
+
     set({ messages: [...current, userMsg], isStreaming: true, status: null, summary: null, error: null, tokens: null, docs: [], tools: [] });
+
+    const controller = new AbortController();
+    set({
+      messages: [...current, userMsg],
+      isStreaming: true,
+      status: null,
+      abortController: controller,
+    });
+
 
     const {
       vectorStorePath,
@@ -60,6 +84,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         ...chatSettings,
         embeddingModel,
         rerankingModel,
+        promptOptions: { instructions: MARKDOWN_INSTRUCTIONS },
       });
       let assistant: Message = { id: crypto.randomUUID(), role: "assistant", content: "" };
       set((state) => ({ messages: [...state.messages, assistant], summary: null, error: null }));
@@ -100,6 +125,27 @@ export const useChatStore = create<ChatState>((set, get) => ({
         });
       }
       set({ isStreaming: false, status: null, thinking: null, tokens: null, docs: [], tools: [] });
+      set((state) => ({ messages: [...state.messages, assistant] }));
+      try {
+        for await (const out of pipeline.run([...current, userMsg], controller.signal)) {
+          if (out.type === "status") {
+            set({ status: out.message });
+            if (controller.signal.aborted) return;
+            continue;
+          }
+          assistant = { ...assistant, content: assistant.content + out.chunk.message };
+          set((state) => {
+            const msgs = [...state.messages];
+            msgs[msgs.length - 1] = assistant;
+            return { messages: msgs };
+          });
+          if (controller.signal.aborted) return;
+        }
+      } catch (error) {
+        console.error("Pipeline run failed", error);
+        set({ status: "Unexpected error", error: "Pipeline failed" });
+      }
+      set({ isStreaming: false, status: null, abortController: null });
       return;
     }
 
@@ -108,18 +154,27 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
     let assistant: Message = { id: crypto.randomUUID(), role: "assistant", content: "" };
     set((state) => ({ messages: [...state.messages, assistant] }));
-    for await (const chunk of client.chat({
-      model: "llama3",
-      messages: [...current, userMsg],
-    })) {
-      assistant = { ...assistant, content: assistant.content + chunk.message };
-      set((state) => {
-        const msgs = [...state.messages];
-        msgs[msgs.length - 1] = assistant;
-        return { messages: msgs };
-      });
+    try {
+      for await (const chunk of client.chat({
+        model: "llama3",
+        messages: [...current, userMsg],
+      })) {
+        assistant = { ...assistant, content: assistant.content + chunk.message };
+        set((state) => {
+          const msgs = [...state.messages];
+          msgs[msgs.length - 1] = assistant;
+          return { messages: msgs };
+        });
+      }
+    } catch (error) {
+      console.error("Chat request failed", error);
+      set({ error: "Chat request failed" });
     }
-    set({ isStreaming: false, status: null, thinking: null, tokens: null, docs: [], tools: [] });
+    set({ isStreaming: false, status: null, thinking: null, tokens: null, docs: [], tools: [], abortController: null });
+  },
+  stop() {
+    get().abortController?.abort();
+    set({ isStreaming: false, status: null, abortController: null, error: null });
   },
 }));
 

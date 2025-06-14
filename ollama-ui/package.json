@@ -40,6 +40,7 @@
     "remark-footnotes": "^3.0.0",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
+    "fuse.js": "^7.0.0",
     "tiktoken": "^1.0.21",
     "zod": "^3.25.64",
     "zustand": "^5.0.5"

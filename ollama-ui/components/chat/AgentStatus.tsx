@@ -9,6 +9,8 @@ export const AgentStatus = () => {
   return (
     <p className="text-xs italic text-gray-500 px-2 flex items-center gap-1">
       {streaming && <Loader2 className="w-3 h-3 animate-spin" />} {status}
+    <p className="text-xs italic text-gray-500 px-2" aria-live="polite">
+
     </p>
   );
 };
