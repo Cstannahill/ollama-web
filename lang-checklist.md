@@ -30,3 +30,4 @@ Use this checklist to track progress while implementing the LangChain pipeline d
 Latest: Added abortable pipeline with stop control and spinner feedback. Added
 RagAssembler error handling and pipeline guard. All tests pass and build
 verified.
+Added context summarizer step with error handling and prompt build guard. Implemented character count in chat input and colored status messages for clearer feedback. Build verified.

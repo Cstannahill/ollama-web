@@ -27,6 +27,9 @@ export const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
         disabled={disabled}
         rows={1}
       />
+      <span className="text-xs text-gray-500 self-end pb-1">
+        {text.length}
+      </span>
       <Button type="submit" disabled={disabled}>
         Send
       </Button>

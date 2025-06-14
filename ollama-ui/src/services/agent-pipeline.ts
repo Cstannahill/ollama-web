@@ -12,19 +12,28 @@ import type { PipelineOutput } from "@/types";
 import { QueryEmbedder } from "@/lib/langchain/query-embedder";
 import { Reranker } from "@/lib/langchain/reranker";
 import { RagAssembler } from "@/lib/langchain/rag-assembler";
+import { ContextSummarizer } from "@/lib/langchain/context-summarizer";
 
 export interface PipelineConfig extends ChatSettings {
   embeddingModel?: string | null;
   rerankingModel?: string | null;
+  summaryLength?: number;
   promptOptions?: PromptOptions;
 }
 export function createAgentPipeline(config: PipelineConfig) {
-  const { embeddingModel, rerankingModel, promptOptions, ...chatSettings } = config;
+  const {
+    embeddingModel,
+    rerankingModel,
+    summaryLength,
+    promptOptions,
+    ...chatSettings
+  } = config;
   const retriever = new VectorStoreRetriever();
   const embedder = new QueryEmbedder(embeddingModel);
   const reranker = new Reranker(rerankingModel);
   const rag = new RagAssembler();
   const promptBuilder = new PromptBuilder(promptOptions);
+  const summarizer = new ContextSummarizer(summaryLength);
   const chat = new OllamaChat(chatSettings);
 
 
@@ -71,9 +80,28 @@ export function createAgentPipeline(config: PipelineConfig) {
       }
 
       if (isAborted()) return;
+      yield { type: "status", message: "Summarizing context" } as const;
+      if (isAborted()) return;
+      let summarized = ranked;
+      try {
+        summarized = await summarizer.summarize(ranked);
+      } catch (error) {
+        console.error("Summarization failed", error);
+        yield { type: "status", message: "Summarization failed" } as const;
+      }
 
-      const assembled = rag.assemble(messages, ranked);
-      const prompt = promptBuilder.build(assembled);
+      if (isAborted()) return;
+      yield { type: "status", message: "Building prompt" } as const;
+      if (isAborted()) return;
+      let prompt = "";
+      try {
+        const assembled = rag.assemble(messages, summarized);
+        prompt = promptBuilder.build(assembled);
+      } catch (error) {
+        console.error("Prompt build failed", error);
+        yield { type: "status", message: "Prompt build failed" } as const;
+        return;
+      }
 
       for (const tool of tools) {
         await tool.invoke(prompt);

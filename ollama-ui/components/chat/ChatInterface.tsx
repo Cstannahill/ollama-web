@@ -25,7 +25,9 @@ export const ChatInterface = () => {
         </div>
         <div className="flex items-center gap-2">
           {status && (
-            <span className="text-xs italic text-gray-500 flex items-center gap-1">
+            <span
+              className={`text-xs italic flex items-center gap-1 ${status.toLowerCase().includes('failed') ? 'text-red-500' : status === 'Completed' ? 'text-green-600' : 'text-gray-500'}`}
+            >
               {isStreaming && <Spinner className="w-3 h-3" />}
               {status}
             </span>
