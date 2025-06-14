@@ -29,3 +29,5 @@ Progress: Implemented embedding and reranking services. Refactored useChatStore 
 - Added progress notifier feature with status updates in UI.
 - Added error handling for retriever and chat invocation.
 - Build succeeds but tests currently fail.
+- Added "thinking" output event and UI panel.
+- Added safeguards for empty queries and tool failures.
