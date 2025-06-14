@@ -29,6 +29,9 @@ export const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
         aria-label="Message input"
         rows={1}
         disabled={disabled || isStreaming}
+        disabled={disabled || isStreaming}
+        aria-label="Message input"
+        rows={1}
       />
       <Button type="submit" disabled={disabled || isStreaming}>
         {isStreaming ? "..." : "Send"}

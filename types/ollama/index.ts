@@ -4,3 +4,4 @@ export * from "./PullProgress";
 export * from "./Model";
 export * from "./ModelFilters";
 export * from "./Chat";
+export * from "./ModelStats";

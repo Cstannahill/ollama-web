@@ -5,8 +5,11 @@ import { Model, ModelFilters } from "@/types";
 import { ModelCard } from "./ModelCard";
 import { parseSize } from "@/lib/utils";
 
+import type { ModelStats } from "@/types";
+
 interface Props {
   models: Model[];
+  stats?: ModelStats;
   onSelect?: (model: Model) => void;
 }
 
@@ -17,7 +20,7 @@ const defaultFilters: ModelFilters = {
   sort: "popular",
 };
 
-export const ModelBrowser = ({ models, onSelect }: Props) => {
+export const ModelBrowser = ({ models, stats, onSelect }: Props) => {
   const [filters, setFilters] = useState<ModelFilters>(defaultFilters);
   const fuseRef = useRef<Fuse<Model> | null>(null);
 
@@ -79,6 +82,11 @@ export const ModelBrowser = ({ models, onSelect }: Props) => {
 
   return (
     <div className="space-y-4">
+      {stats && (
+        <div className="text-sm text-muted-foreground">
+          {stats.downloaded}/{stats.total} models downloaded · Last updated {new Date(stats.lastUpdated).toLocaleString()}
+        </div>
+      )}
       <div className="flex flex-wrap gap-4 items-end">
         <input
           placeholder="Search models"

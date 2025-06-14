@@ -13,6 +13,9 @@ import { OllamaChat } from "@/lib/langchain/ollama-chat";
 import { vectorStore } from "@/lib/vector";
 import type { ChatSettings, Message, PromptOptions } from "@/types";
 import type { PipelineOutput } from "@/types";
+import type { Message } from "@/types";
+import type { PipelineOutput } from "@/types";
+import type { ChatSettings, PromptOptions } from "@/types";
 
 export interface PipelineConfig extends ChatSettings {
   embeddingModel?: string | null;
@@ -136,6 +139,15 @@ export function createAgentPipeline(config: PipelineConfig) {
       } catch (err) {
         console.error("Logger failed", err);
       }
+export function createAgentPipeline(_config: PipelineConfig) {
+  void _config;
+  return {
+    use() {
+      return this;
+    },
+    async *run(_messages: Message[]): AsyncGenerator<PipelineOutput> {
+      void _messages;
+      yield { type: "status", message: "Pipeline not implemented" } as const;
     },
   };
 }
