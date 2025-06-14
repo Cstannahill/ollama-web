@@ -7,7 +7,7 @@ Ensure the Ollama web interface remains responsive even with large models and lo
 
 ## Core Flows and UI Touchpoints
 
-- `Header` component shows connection status using a streamed server component wrapped in `Suspense`.
+- `NavigationHeader` component shows connection status using a streamed server component wrapped in `Suspense`.
 - `ModelBrowser` dynamically imports heavy client logic.
 - Service worker enables basic offline support.
 - `VectorStoreService` caches embeddings and search results.
@@ -25,7 +25,7 @@ Types are defined in [`/types/ollama`](../../types/ollama).
 
 ```mermaid
 flowchart TD
-    Header --> getOllamaStatus
+    NavigationHeader --> getOllamaStatus
     ModelsPage --> getAvailableModels
     ModelsPage --> getModelStats
     VectorStoreService --> EmbeddingService
