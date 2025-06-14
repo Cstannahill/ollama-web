@@ -8,4 +8,10 @@ export default defineConfig({
   esbuild: {
     jsx: 'automatic',
   },
+  resolve: {
+    alias: {
+      '@/': `${__dirname}/src/`,
+      '@': `${__dirname}/src`,
+    },
+  },
 });

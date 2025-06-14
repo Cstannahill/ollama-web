@@ -6,18 +6,21 @@ import {
 import { VectorStoreRetriever } from "@/lib/langchain/vector-retriever";
 import { PromptBuilder } from "@/lib/langchain/prompt-builder";
 import { OllamaChat } from "@/lib/langchain/ollama-chat";
+import { RerankerService } from "@/services/reranker-service";
 import type { ChatSettings, Message, ChatResponse, SearchResult } from "@/types";
 
 export function createAgentPipeline(settings: ChatSettings) {
   const retriever = new VectorStoreRetriever();
-  const promptBuilder = new PromptBuilder();
+  const reranker = new RerankerService();
+  const promptBuilder = new PromptBuilder({ systemPrompt: settings.systemPrompt });
   const chat = new OllamaChat(settings);
 
   let chain: Runnable<Message[], unknown> = RunnableSequence.from([
     RunnableLambda.from(async (messages: Message[]) => {
       const query = messages[messages.length - 1]?.content ?? "";
       const docs = await retriever.getRelevantDocuments(query);
-      return { messages, docs } as { messages: Message[]; docs: SearchResult[] };
+      const ranked = await reranker.rerank(query, docs);
+      return { messages, docs: ranked } as { messages: Message[]; docs: SearchResult[] };
     }),
     RunnableLambda.from(async ({ messages, docs }: { messages: Message[]; docs: SearchResult[] }) => {
       const systemMessages = docs.map((d) => ({ id: crypto.randomUUID(), role: "system" as const, content: d.text }));
