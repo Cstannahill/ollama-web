@@ -1,21 +1,11 @@
 import { ModelBrowser } from "@/components/models";
-import type { Model } from "@/types";
-
-async function getModels(): Promise<Model[]> {
-  try {
-    const res = await fetch(`${process.env.OLLAMA_BASE_URL || "http://localhost:11434"}/api/tags`);
-    if (!res.ok) return [];
-    return res.json();
-  } catch {
-    return [];
-  }
-}
+import { getAvailableModels, getModelStats } from "@/lib/ollama/server";
 
 export default async function Page() {
-  const models = await getModels();
+  const [models, stats] = await Promise.all([getAvailableModels(), getModelStats()]);
   return (
     <div className="p-6">
-      <ModelBrowser models={models} />
+      <ModelBrowser models={models} stats={stats} />
     </div>
   );
 }
