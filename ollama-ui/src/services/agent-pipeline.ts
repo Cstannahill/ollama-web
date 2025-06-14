@@ -2,6 +2,7 @@ import { Runnable } from "@langchain/core/runnables";
 import { VectorStoreRetriever } from "@/lib/langchain/vector-retriever";
 import { PromptBuilder } from "@/lib/langchain/prompt-builder";
 import { OllamaChat } from "@/lib/langchain/ollama-chat";
+import { vectorStore } from "@/lib/vector";
 import type {
   ChatSettings,
   Message,
@@ -62,8 +63,16 @@ export function createAgentPipeline(config: PipelineConfig) {
         docs = await retriever.getRelevantDocuments(query);
       } catch (error) {
         console.error("Retrieval failed", error);
+        if (
+          error instanceof Error &&
+          error.message.includes("not initialized")
+        ) {
+          yield { type: "status", message: "Vector store not ready" } as const;
+          return;
+        }
         yield { type: "status", message: "Retrieval failed" } as const;
       }
+      yield { type: "docs", docs } as const;
 
       yield { type: "status", message: "Reranking results" } as const;
       let ranked = docs;
@@ -108,6 +117,16 @@ export function createAgentPipeline(config: PipelineConfig) {
           yield { type: "chat", chunk } as const;
         }
         yield { type: "status", message: "Completed" } as const;
+        try {
+          const docsToSave = ranked.map((d) => ({
+            id: crypto.randomUUID(),
+            text: d.text,
+          }));
+          await vectorStore.addConversation(messages[0]?.id ?? crypto.randomUUID(), docsToSave);
+        } catch (error) {
+          console.error("Conversation save failed", error);
+          yield { type: "status", message: "Failed to save conversation" } as const;
+        }
       } catch (error) {
         console.error("Chat invocation failed", error);
         yield { type: "status", message: "Model invocation failed" } as const;

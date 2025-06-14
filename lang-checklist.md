@@ -34,3 +34,6 @@ Progress: Implemented embedding and reranking services. Refactored useChatStore 
 - Introduced HistoryTrimmer step and token stats event.
 - Added UI components for token display and disabled input during streaming.
 - Added error handling for vector store initialization and RAG assembly.
+- Added docs output event and UI component to display retrieved context.
+- Added spinner to status messages while streaming.
+- Conversation history saved to vector store after completion with error handling.

@@ -8,6 +8,8 @@ import { ExportMenu } from "./ExportMenu";
 import { AgentStatus } from "./AgentStatus";
 import { AgentThinking } from "./AgentThinking";
 import { TokenInfo } from "./TokenInfo";
+import { AgentDocs } from "./AgentDocs";
+
 
 export const ChatInterface = () => {
   const { messages, isStreaming, sendMessage, mode, status, tokens } = useChatStore();
@@ -35,6 +37,7 @@ export const ChatInterface = () => {
         ))}
         {isStreaming && <ChatMessage message={{ role: "assistant", content: "" }} />}
         <AgentStatus />
+        <AgentDocs />
         <AgentThinking />
         <TokenInfo />
         <div ref={bottomRef} />

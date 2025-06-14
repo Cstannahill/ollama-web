@@ -2,7 +2,9 @@
 
 ## Feature Purpose and Scope
 
-Provide a modular pipeline for retrieval augmented generation (RAG) using LangChain. The pipeline handles history trimming, embeddings, vector search, reranking and prompt assembly before streaming results from Ollama. Each step emits progress events so the UI can display the agent's current action. A separate "thinking" output exposes a short summary of the pipeline's reasoning. Token estimates are also emitted for better user feedback.
+
+Provide a modular pipeline for retrieval augmented generation (RAG) using LangChain. The pipeline handles embeddings, history trimming, vector search, reranking and prompt assembly before streaming results from Ollama. Each step emits progress events so the UI can display the agent's current action. A separate "thinking" output exposes a short summary of the pipeline's reasoning which can be expanded in the chat UI. Retrieved documents are emitted so the interface can show which context was used, and completed conversations are stored back into the vector store for future queries.
+
 
 ## Core Flows and UI Touchpoints
 
