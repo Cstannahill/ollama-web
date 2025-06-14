@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import Header from "@/components/Header";
 import HeaderSkeleton from "@/components/HeaderSkeleton";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import { ServiceWorkerProvider } from "@/components/performance";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,6 +26,8 @@ export default function RootLayout({
           </Suspense>
           {children}
           <ServiceWorkerRegister />
+          <ServiceWorkerProvider />
+          {children}
         </ThemeProvider>
       </body>
     </html>
