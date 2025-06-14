@@ -11,7 +11,11 @@ export const ThemeToggle = () => {
       aria-label="Toggle theme"
       className="p-2 border rounded text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white"
     >
-      {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+      {theme === "dark" ? (
+        <Sun className="w-4 h-4" aria-hidden />
+      ) : (
+        <Moon className="w-4 h-4" aria-hidden />
+      )}
     </button>
   );
 };

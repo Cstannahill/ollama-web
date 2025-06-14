@@ -13,7 +13,10 @@ export const Toast = ({ message, onDismiss }: ToastProps) => {
   }, [onDismiss]);
 
   return (
-    <div className="fixed bottom-4 right-4 bg-red-500 text-white px-3 py-2 rounded shadow">
+    <div
+      role="alert"
+      className="fixed bottom-4 right-4 bg-red-500 text-white px-3 py-2 rounded shadow"
+    >
       {message}
     </div>
   );

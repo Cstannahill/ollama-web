@@ -193,7 +193,7 @@ export const CodeBlock = ({
             onClick={() => setShowNumbers((n) => !n)}
             className="text-gray-400 hover:text-white"
           >
-            <Hash className="w-4 h-4" />
+            <Hash className="w-4 h-4" aria-hidden />
           </button>
           <button
             type="button"
@@ -204,7 +204,7 @@ export const CodeBlock = ({
             }}
             className="text-gray-400 hover:text-white"
           >
-            <Search className="w-4 h-4" />
+            <Search className="w-4 h-4" aria-hidden />
           </button>
         </div>
         <div className="flex gap-1">
@@ -214,7 +214,11 @@ export const CodeBlock = ({
             onClick={handleCopy}
             className="text-gray-400 hover:text-white"
           >
-            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copied ? (
+              <Check className="w-4 h-4" aria-hidden />
+            ) : (
+              <Copy className="w-4 h-4" aria-hidden />
+            )}
           </button>
           <button
             type="button"
@@ -222,7 +226,7 @@ export const CodeBlock = ({
             onClick={() => handleDownload("markdown")}
             className="text-gray-400 hover:text-white"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4" aria-hidden />
           </button>
           {runnable && (
             <button
@@ -235,7 +239,7 @@ export const CodeBlock = ({
               }}
               className="text-gray-400 hover:text-white"
             >
-              <Play className="w-4 h-4" />
+              <Play className="w-4 h-4" aria-hidden />
             </button>
           )}
           {editable && (
@@ -245,7 +249,7 @@ export const CodeBlock = ({
               onClick={() => setEditing((e) => !e)}
               className="text-gray-400 hover:text-white"
             >
-              <Pencil className="w-4 h-4" />
+              <Pencil className="w-4 h-4" aria-hidden />
             </button>
           )}
           <button
@@ -254,7 +258,7 @@ export const CodeBlock = ({
             onClick={() => setFullscreen(true)}
             className="text-gray-400 hover:text-white"
           >
-            <Maximize2 className="w-4 h-4" />
+            <Maximize2 className="w-4 h-4" aria-hidden />
           </button>
         </div>
       </div>
@@ -317,7 +321,7 @@ export const CodeBlock = ({
           onClick={() => setFullscreen(false)}
           className="absolute top-2 right-2 text-white"
         >
-          <X className="w-5 h-5" />
+          <X className="w-5 h-5" aria-hidden />
         </button>
         {body}
       </div>

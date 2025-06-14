@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export const Spinner = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("animate-spin", className)} {...props}>
+  <div className={cn("animate-spin", className)} role="status" aria-label="Loading" {...props}>
     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
       <circle
         className="opacity-25"
