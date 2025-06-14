@@ -2,7 +2,7 @@
 
 ## Feature Purpose and Scope
 
-Enable advanced conversation capabilities with context-aware responses. When activated, the chat routes messages through the LangChain agent pipeline to retrieve context and assemble prompts before calling Ollama.
+Enable advanced conversation capabilities with context-aware responses. When activated, the chat routes messages through the LangChain agent pipeline to retrieve context, summarise results, assemble prompts and then call Ollama.
 
 ## Core Flows and UI Touchpoints
 
@@ -10,7 +10,7 @@ Enable advanced conversation capabilities with context-aware responses. When act
 - Messages handled in `useChatStore` with `mode` state.
 - When in agentic mode, queries call `vectorStore.search` and prepend results to the conversation.
 - Current mode is displayed as a badge in `ChatInterface`.
-- Agent status updates (e.g. "retrieving documents") are shown below the conversation.
+- Agent status updates (e.g. "retrieving documents" or "summarizing context") are shown below the conversation.
 
 ## Primary Types/Interfaces
 
