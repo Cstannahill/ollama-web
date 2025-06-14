@@ -4,7 +4,7 @@ import { useEffect } from "react";
 export const ServiceWorkerProvider = () => {
   useEffect(() => {
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/service-worker.js").catch(() => {});
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
   }, []);
   return null;
