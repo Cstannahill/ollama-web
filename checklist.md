@@ -22,7 +22,7 @@ For recommended system prompts that produce advanced markdown features, see [doc
 - [x] Vector database integration
 - [x] Agentic chat mode
 - [x] Advanced search and filtering
-- [ ] LLM prompt tuning for markdown usage
+- [x] LLM prompt tuning for markdown usage
 - [ ] Performance optimizations
 
 ### Phase 4: Polish & Launch (Weeks 13-16)
