@@ -10,9 +10,18 @@ Enable advanced conversation capabilities with context-aware responses. When act
 - Messages handled in `useChatStore` with `mode` state.
 - When in agentic mode, queries call `vectorStore.search` and prepend results to the conversation.
 - Current mode is displayed as a badge in `ChatInterface`.
+
+- Agent status updates (e.g. "retrieving documents") are shown below the conversation.
+- A collapsible "Thinking" panel displays reasoning details from the pipeline.
+- Token estimates are displayed after each request.
+- Retrieved context documents are listed in a collapsible "Context Documents" section.
+- Status messages show a spinner while streaming is active.
+
+
 - Agent status updates (e.g. "retrieving documents" or "summarizing context") are shown below the conversation.
 - A progress bar illustrates pipeline steps while streaming.
 - Error toasts inform users of failures during chat.
+
 
 ## Primary Types/Interfaces
 
