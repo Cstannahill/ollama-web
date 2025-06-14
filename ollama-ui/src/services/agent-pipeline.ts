@@ -110,10 +110,11 @@ export function createAgentPipeline(config: PipelineConfig) {
 
       for (const tool of tools) {
         try {
-          await tool.invoke(prompt);
+          const output = await tool.invoke(prompt);
+          yield { type: "tool", name: tool.name || "tool", output } as const;
         } catch (error) {
           console.error("Tool failed", error);
-          yield { type: "status", message: `${tool.name || "tool"} failed` } as const;
+          yield { type: "error", message: `${tool.name || "tool"} failed` } as const;
         }
       }
 
@@ -124,8 +125,13 @@ export function createAgentPipeline(config: PipelineConfig) {
           full += chunk.message;
           yield { type: "chat", chunk } as const;
         }
-        const summary = summarizer.summarize(full);
-        yield { type: "summary", message: summary } as const;
+        try {
+          const summary = summarizer.summarize(full);
+          yield { type: "summary", message: summary } as const;
+        } catch (error) {
+          console.error("Summarization failed", error);
+          yield { type: "error", message: "Summarization failed" } as const;
+        }
         yield { type: "status", message: "Completed" } as const;
         try {
           const docsToSave = ranked.map((d) => ({

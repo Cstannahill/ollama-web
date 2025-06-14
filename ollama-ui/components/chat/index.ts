@@ -9,5 +9,6 @@ export * from "./AgentSummary";
 export * from "./AgentError";
 export * from "./TokenInfo";
 export * from "./AgentDocs";
+export * from "./AgentToolOutput";
 
 

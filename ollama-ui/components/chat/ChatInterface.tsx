@@ -11,6 +11,7 @@ import { AgentSummary } from "./AgentSummary";
 import { AgentError } from "./AgentError";
 import { TokenInfo } from "./TokenInfo";
 import { AgentDocs } from "./AgentDocs";
+import { AgentToolOutput } from "./AgentToolOutput";
 
 
 export const ChatInterface = () => {
@@ -40,6 +41,7 @@ export const ChatInterface = () => {
         {isStreaming && <ChatMessage message={{ role: "assistant", content: "" }} />}
         <AgentStatus />
         <AgentDocs />
+        <AgentToolOutput />
         <AgentThinking />
         <AgentError />
         <AgentSummary />

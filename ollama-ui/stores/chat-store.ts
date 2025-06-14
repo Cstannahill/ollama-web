@@ -16,6 +16,7 @@ interface ChatState {
   error: string | null;
   tokens: number | null;
   docs: SearchResult[];
+  tools: { name: string; output: string }[];
   mode: ChatMode;
   setMode: (mode: ChatMode) => void;
   sendMessage: (text: string) => Promise<void>;
@@ -29,12 +30,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
   summary: null,
   error: null,
   tokens: null,
+  docs: [],
+  tools: [],
   mode: "simple",
   setMode: (mode) => set({ mode }),
   async sendMessage(text: string) {
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
     const current = get().messages;
-    set({ messages: [...current, userMsg], isStreaming: true, status: null, summary: null, error: null });
+    set({ messages: [...current, userMsg], isStreaming: true, status: null, summary: null, error: null, tokens: null, docs: [], tools: [] });
 
     const {
       vectorStorePath,
@@ -49,7 +52,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           await vectorStore.initialize({ storagePath: vectorStorePath });
         } catch (error) {
           console.error("Vector store init failed", error);
-          set({ isStreaming: false, status: "Vector DB init failed", thinking: null, tokens: null });
+          set({ isStreaming: false, status: "Vector DB init failed", thinking: null, tokens: null, docs: [], tools: [] });
           return;
         }
       }
@@ -79,10 +82,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }
         if (out.type === "summary") {
           set({ summary: out.message });
-
+          continue;
+        }
         if (out.type === "tokens") {
           set({ tokens: out.count });
-
+          continue;
+        }
+        if (out.type === "tool") {
+          set((state) => ({ tools: [...state.tools, { name: out.name, output: out.output }] }));
           continue;
         }
         assistant = { ...assistant, content: assistant.content + out.chunk.message };
@@ -92,7 +99,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           return { messages: msgs };
         });
       }
-      set({ isStreaming: false, status: null, thinking: null, tokens: null, docs: [] });
+      set({ isStreaming: false, status: null, thinking: null, tokens: null, docs: [], tools: [] });
       return;
     }
 
@@ -112,7 +119,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         return { messages: msgs };
       });
     }
-    set({ isStreaming: false, status: null, thinking: null, tokens: null, docs: [] });
+    set({ isStreaming: false, status: null, thinking: null, tokens: null, docs: [], tools: [] });
   },
 }));
 

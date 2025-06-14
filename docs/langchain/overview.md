@@ -41,3 +41,8 @@ flowchart TD
     Q --> H --> E --> R --> RR --> P --> C --> T((Tokens))
 
 ```
+
+## Future Agentic Operations
+
+- **Long-Term Memory Store** – persisting condensed conversation summaries for efficient retrieval across sessions.
+- **Conditional Tool Invocation** – dynamically choose which tools to run based on the query intent or intermediate results.
