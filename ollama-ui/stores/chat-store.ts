@@ -11,6 +11,7 @@ interface ChatState {
   messages: Message[];
   isStreaming: boolean;
   status: string | null;
+  thinking: string | null;
   mode: ChatMode;
   setMode: (mode: ChatMode) => void;
   sendMessage: (text: string) => Promise<void>;
@@ -20,6 +21,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],
   isStreaming: false,
   status: null,
+  thinking: null,
   mode: "simple",
   setMode: (mode) => set({ mode }),
   async sendMessage(text: string) {
@@ -50,6 +52,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
           set({ status: out.message });
           continue;
         }
+        if (out.type === "thinking") {
+          set({ thinking: out.message });
+          continue;
+        }
         assistant = { ...assistant, content: assistant.content + out.chunk.message };
         set((state) => {
           const msgs = [...state.messages];
@@ -57,7 +63,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           return { messages: msgs };
         });
       }
-      set({ isStreaming: false, status: null });
+      set({ isStreaming: false, status: null, thinking: null });
       return;
     }
 
@@ -78,7 +84,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
     }
 
-    set({ isStreaming: false, status: null });
+    set({ isStreaming: false, status: null, thinking: null });
   },
 }));
 

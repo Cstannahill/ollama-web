@@ -11,6 +11,7 @@ Enable advanced conversation capabilities with context-aware responses. When act
 - When in agentic mode, queries call `vectorStore.search` and prepend results to the conversation.
 - Current mode is displayed as a badge in `ChatInterface`.
 - Agent status updates (e.g. "retrieving documents") are shown below the conversation.
+- A collapsible "Thinking" panel displays reasoning details from the pipeline.
 
 ## Primary Types/Interfaces
 

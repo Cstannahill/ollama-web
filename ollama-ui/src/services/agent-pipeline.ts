@@ -37,6 +37,10 @@ export function createAgentPipeline(config: PipelineConfig) {
     },
     async *run(messages: Message[]): AsyncGenerator<PipelineOutput> {
       const query = messages[messages.length - 1]?.content ?? "";
+      if (!query.trim()) {
+        yield { type: "status", message: "Query is empty" } as const;
+        return;
+      }
       yield { type: "status", message: "Embedding query" } as const;
       try {
         await embedder.embed(query);
@@ -65,8 +69,16 @@ export function createAgentPipeline(config: PipelineConfig) {
       const assembled = rag.assemble(messages, ranked);
       const prompt = promptBuilder.build(assembled);
 
+      const thinking = `docs: ${ranked.length}, prompt preview: ${prompt.slice(0, 40)}...`;
+      yield { type: "thinking", message: thinking } as const;
+
       for (const tool of tools) {
-        await tool.invoke(prompt);
+        try {
+          await tool.invoke(prompt);
+        } catch (error) {
+          console.error("Tool failed", error);
+          yield { type: "status", message: `${tool.name || "tool"} failed` } as const;
+        }
       }
 
       yield { type: "status", message: "Invoking model" } as const;
