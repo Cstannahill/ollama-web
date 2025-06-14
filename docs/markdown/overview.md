@@ -88,10 +88,13 @@ This section can be toggled.
 The LangChain pipeline automatically prepends these instructions to every
 conversation so the model outputs rich markdown:
 
-- Use the blockquote syntax with **TIP**, **INFO** or **WARNING** for callouts.
+- Use the blockquote syntax with **TIP**, **INFO**, **WARNING**, or **NOTE** for callouts.
 - Separate files in multi-file examples with `---` lines and specify the
   language and filename for each code block.
 - Produce diagrams in `mermaid` fenced blocks.
+- Wrap optional explanations in `<details>` blocks with a `<summary>` title.
+- Reference sources using footnotes.
+- Highlight important lines in code blocks with `{highlight: [n]}` metadata.
 
 ## Maintaining Documentation
 

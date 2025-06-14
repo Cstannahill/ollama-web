@@ -16,7 +16,11 @@ export const CollapsibleSection = ({ title, children }: CollapsibleSectionProps)
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-2 w-full px-3 py-2 bg-gray-800 text-left"
       >
-        {open ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+        {open ? (
+          <ChevronDown className="w-4 h-4" aria-hidden />
+        ) : (
+          <ChevronRight className="w-4 h-4" aria-hidden />
+        )}
         <span className="font-medium">{title}</span>
       </button>
       {open && <div className="p-3">{children}</div>}

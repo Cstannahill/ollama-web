@@ -6,9 +6,16 @@ import { useChatStore } from "@/stores/chat-store";
 import { ThemeToggle, Badge, Button, Spinner, Progress, Toast } from "@/components/ui";
 import { ExportMenu } from "./ExportMenu";
 import { AgentStatus } from "./AgentStatus";
+import { AgentThinking } from "./AgentThinking";
+import { AgentSummary } from "./AgentSummary";
+import { AgentError } from "./AgentError";
+import { TokenInfo } from "./TokenInfo";
+import { AgentDocs } from "./AgentDocs";
+import { AgentToolOutput } from "./AgentToolOutput";
+
 
 export const ChatInterface = () => {
-  const { messages, isStreaming, sendMessage, stop, mode, status, error, setError } =
+  const { messages, isStreaming, sendMessage, stop, mode, status, tokens, error, setError } =
     useChatStore();
   const bottomRef = useRef<HTMLDivElement>(null);
   const statusOrder = [
@@ -25,7 +32,7 @@ export const ChatInterface = () => {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, status, tokens]);
 
   return (
     <div className="flex flex-col h-screen">
@@ -52,12 +59,22 @@ export const ChatInterface = () => {
         </div>
       </div>
       {isStreaming && <Progress value={progress} />}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+      <div
+        className="flex-1 overflow-y-auto p-4 flex flex-col gap-2"
+        role="log"
+        aria-live="polite"
+      >
         {messages.map((m, i) => (
           <ChatMessage key={i} message={m} />
         ))}
         {isStreaming && <ChatMessage message={{ role: "assistant", content: "" }} />}
         <AgentStatus />
+        <AgentDocs />
+        <AgentToolOutput />
+        <AgentThinking />
+        <AgentError />
+        <AgentSummary />
+        <TokenInfo />
         <div ref={bottomRef} />
       </div>
       <ChatInput onSend={sendMessage} disabled={isStreaming} />

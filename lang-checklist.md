@@ -25,8 +25,20 @@ Use this checklist to track progress while implementing the LangChain pipeline d
 - Refactored useChatStore to run createAgentPipeline.
 - Added progress notifier feature with status updates in UI.
 - Added error handling for retriever and chat invocation.
+- Build succeeds but tests currently fail.
+- Added "thinking" output event and UI panel.
+- Added safeguards for empty queries and tool failures.
+- Added summariser step with UI summary panel. Enhanced error events for retrieval and model invocation.
+- Introduced HistoryTrimmer step and token stats event.
+- Added UI components for token display and disabled input during streaming.
+- Added error handling for vector store initialization and RAG assembly.
+- Added docs output event and UI component to display retrieved context.
+- Added spinner to status messages while streaming.
+- Conversation history saved to vector store after completion with error handling.
+- Added tool output event with UI component.
+- Added copy-to-clipboard action for messages.
+- Added safeguards for summarizer and tool invocation failures.
 - Build and tests succeed.
-
 Latest: Added abortable pipeline with stop control and spinner feedback. Added
 RagAssembler error handling and pipeline guard. All tests pass and build
 verified.
