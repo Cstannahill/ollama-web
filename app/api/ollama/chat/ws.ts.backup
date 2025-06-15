@@ -1,0 +1,32 @@
+import { NextApiRequest } from 'next';
+import { Server } from 'ws';
+import { runAgenticChat } from '@/services/agentic-chat-api';
+
+// This is a placeholder for a websocket handler for agentic chat
+// In production, use a websocket server (e.g. ws, socket.io, or Next.js custom server)
+
+export default function handler(req: NextApiRequest, res: any) {
+  if (res.socket.server.ws) {
+    res.end();
+    return;
+  }
+
+  const wss = new Server({ server: res.socket.server });
+  res.socket.server.ws = wss;
+
+  wss.on('connection', (ws) => {
+    ws.on('message', async (message) => {
+      try {
+        const { messages, settings } = JSON.parse(message.toString());
+        const pipeline = runAgenticChat({ messages, settings });
+        for await (const output of pipeline) {
+          ws.send(JSON.stringify(output));
+        }
+      } catch (err) {
+        ws.send(JSON.stringify({ error: err?.message || 'Internal error' }));
+      }
+    });
+  });
+
+  res.end();
+}
