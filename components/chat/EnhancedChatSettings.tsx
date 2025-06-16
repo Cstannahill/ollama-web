@@ -4,9 +4,12 @@ import { useState, useEffect } from "react";
 import { useSettingsStore } from "@/stores/settings-store";
 import { useChatStore } from "@/stores/chat-store";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { OllamaClient } from "@/lib/ollama/client";
 import { OLLAMA_BASE_URL } from "@/lib/config";
 
@@ -20,7 +23,7 @@ const Settings = ({ className }: { className?: string }) => (
   >
     <path
       strokeLinecap="round"
-      strokeLinejoin="round"
+      strokeLinejoin="round"  
       strokeWidth={2}
       d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
     />
@@ -29,22 +32,6 @@ const Settings = ({ className }: { className?: string }) => (
       strokeLinejoin="round"
       strokeWidth={2}
       d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-    />
-  </svg>
-);
-
-const X = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M6 18L18 6M6 6l12 12"
     />
   </svg>
 );
@@ -61,7 +48,6 @@ export const EnhancedChatSettings = () => {
     setVectorStorePath,
   } = useSettingsStore();
   const { mode, isStreaming } = useChatStore();
-  const [open, setOpen] = useState(false);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
 
   // Load available models when component mounts
@@ -89,37 +75,28 @@ export const EnhancedChatSettings = () => {
     updateChatSettings({ model });
   };
 
-  if (!open) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setOpen(true)}
-        disabled={isStreaming}
-        className="flex items-center gap-2"
-      >
-        <Settings className="w-4 h-4" />
-        Settings
-      </Button>
-    );
-  }
-
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              Chat Settings
-              <Badge variant="outline">{mode} mode</Badge>
-            </CardTitle>
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
-            <X className="w-4 h-4" />
-          </Button>
-        </CardHeader>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={isStreaming}
+          className="flex items-center gap-2"
+        >
+          <Settings className="w-4 h-4" />
+          Settings
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            Chat Settings
+            <Badge variant="outline">{mode} mode</Badge>
+          </DialogTitle>
+        </DialogHeader>
 
-        <CardContent className="space-y-6">
+        <div className="space-y-6">
           {/* General Chat Settings */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground">
@@ -128,39 +105,44 @@ export const EnhancedChatSettings = () => {
 
             {/* Model Selection */}
             <div className="space-y-3">
-              <label className="text-sm font-medium">
+              <Label>
                 Model
                 <span className="text-xs text-muted-foreground ml-1">
                   (AI model to use for chat)
                 </span>
-              </label>
-              <select
-                value={chatSettings.model || "mistral:latest"}
-                onChange={(e) => handleModelChange(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+              </Label>
+              <Select
+                value={chatSettings.model || ""}
+                onValueChange={handleModelChange}
               >
-                {availableModels.length > 0 ? (
-                  availableModels.map((model) => (
-                    <option key={model} value={model}>
-                      {model}
-                    </option>
-                  ))
-                ) : (
-                  <option value="mistral:latest">
-                    mistral:latest (loading...)
-                  </option>
-                )}
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a model" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableModels.length > 0 ? (
+                    availableModels.map((model) => (
+                      <SelectItem key={model} value={model}>
+                        {model}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="loading" disabled>
+                      Loading models...
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
 
+            {/* Temperature */}
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <label className="text-sm font-medium">
+                <Label>
                   Temperature
                   <span className="text-xs text-muted-foreground ml-1">
-                    (Creativity vs Focus)
+                    (Response creativity)
                   </span>
-                </label>
+                </Label>
                 <span className="text-sm font-mono bg-muted px-2 py-1 rounded">
                   {chatSettings.temperature.toFixed(2)}
                 </span>
@@ -176,31 +158,27 @@ export const EnhancedChatSettings = () => {
                 }
                 className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
               />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Focused (0.0)</span>
-                <span>Balanced (1.0)</span>
-                <span>Creative (2.0)</span>
-              </div>
             </div>
 
+            {/* Top P */}
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <label className="text-sm font-medium">
+                <Label>
                   Top P
                   <span className="text-xs text-muted-foreground ml-1">
-                    (Nucleus sampling)
+                    (Response diversity)
                   </span>
-                </label>
+                </Label>
                 <span className="text-sm font-mono bg-muted px-2 py-1 rounded">
                   {(chatSettings.topP ?? 0.9).toFixed(2)}
                 </span>
               </div>
               <input
                 type="range"
-                min="0.1"
+                min="0"
                 max="1"
                 step="0.01"
-                value={chatSettings.topP}
+                value={chatSettings.topP ?? 0.9}
                 onChange={(e) =>
                   handleSliderChange("topP", parseFloat(e.target.value))
                 }
@@ -210,14 +188,14 @@ export const EnhancedChatSettings = () => {
 
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <label className="text-sm font-medium">
+                <Label>
                   Top K
                   <span className="text-xs text-muted-foreground ml-1">
                     (Token selection limit)
                   </span>
-                </label>
+                </Label>
                 <span className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                  {chatSettings.topK}
+                  {chatSettings.topK ?? 40}
                 </span>
               </div>
               <input
@@ -225,7 +203,7 @@ export const EnhancedChatSettings = () => {
                 min="1"
                 max="100"
                 step="1"
-                value={chatSettings.topK}
+                value={chatSettings.topK ?? 40}
                 onChange={(e) =>
                   handleSliderChange("topK", parseInt(e.target.value))
                 }
@@ -244,68 +222,70 @@ export const EnhancedChatSettings = () => {
                 </h3>
 
                 <div className="space-y-3">
-                  <label className="text-sm font-medium">
+                  <Label>
                     Vector Store Path
                     <span className="text-xs text-muted-foreground ml-1">
                       (Knowledge base location)
                     </span>
-                  </label>
-                  <input
-                    type="text"
+                  </Label>
+                  <Input
                     value={vectorStorePath || ""}
                     onChange={(e) => setVectorStorePath(e.target.value)}
-                    placeholder="Enter path to your vector store..."
-                    className="w-full px-3 py-2 text-sm border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="S:\\Knowledge"
                   />
-                  {!vectorStorePath && (
-                    <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                      ⚠️ Vector store path required for document search
-                    </p>
-                  )}
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-sm font-medium">
+                  <Label>
                     Embedding Model
                     <span className="text-xs text-muted-foreground ml-1">
                       (For document similarity)
                     </span>
-                  </label>
-                  <input
-                    type="text"
+                  </Label>
+                  <Select
                     value={embeddingModel || ""}
-                    onChange={(e) => setEmbeddingModel(e.target.value)}
-                    placeholder="e.g., nomic-embed-text"
-                    className="w-full px-3 py-2 text-sm border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
+                    onValueChange={setEmbeddingModel}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select embedding model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="nomic-embed-text">nomic-embed-text</SelectItem>
+                      <SelectItem value="all-minilm">all-minilm</SelectItem>
+                      <SelectItem value="sentence-transformers">sentence-transformers</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-sm font-medium">
+                  <Label>
                     Reranking Model
                     <span className="text-xs text-muted-foreground ml-1">
                       (For result refinement)
                     </span>
-                  </label>
-                  <input
-                    type="text"
+                  </Label>
+                  <Select
                     value={rerankingModel || ""}
-                    onChange={(e) => setRerankingModel(e.target.value)}
-                    placeholder="e.g., llama3"
-                    className="w-full px-3 py-2 text-sm border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
+                    onValueChange={setRerankingModel}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select reranking model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {availableModels.map((model) => (
+                        <SelectItem key={model} value={model}>
+                          {model}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </>
           )}
-
-          <Separator />
-
-          <div className="flex justify-end">
-            <Button onClick={() => setOpen(false)}>Done</Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

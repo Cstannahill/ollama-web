@@ -1,19 +1,11 @@
-import dynamic from "next/dynamic";
-import { getAvailableModels, getModelStats } from "@/lib/ollama/server";
-
-const ModelManager = dynamic(
-  () => import("@/components/models").then((m) => m.ModelManager),
-  {
-    loading: () =>
-      import("@/components/models").then((m) => <m.ModelBrowserSkeleton />),
-  },
-);
-
+import { getAvailableModels, getPulledModels, getModelStats } from "@/lib/ollama/server";
+import { ModelManager } from "@/components/models";
 
 export default async function Page() {
-  const [models, stats] = await Promise.all([
+  const [availableModels, pulledModels, stats] = await Promise.all([
     getAvailableModels(),
+    getPulledModels(), 
     getModelStats(),
   ]);
-  return <ModelManager models={models} stats={stats} />;
+  return <ModelManager availableModels={availableModels} pulledModels={pulledModels} stats={stats} />;
 }

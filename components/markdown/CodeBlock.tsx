@@ -2,9 +2,36 @@
 import { useState, useEffect, useId, useMemo } from "react";
 import Prism from "prismjs";
 
+// Import core languages explicitly for better reliability
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-typescript";
+import "prismjs/components/prism-jsx";
+import "prismjs/components/prism-tsx";
+
 const loadLanguage = async (lang: string) => {
   if (!lang || Prism.languages[lang]) return;
+  
+  // Handle TypeScript specifically
+  if (lang === 'typescript' || lang === 'ts') {
+    try {
+      // @ts-ignore - Prism component import doesn't have types
+      await import('prismjs/components/prism-typescript.js');
+      return;
+    } catch {
+      // fallback to javascript highlighting for typescript
+      try {
+        // @ts-ignore
+        await import('prismjs/components/prism-javascript.js');
+      } catch {
+        // ignore if javascript also fails
+      }
+      return;
+    }
+  }
+  
+  // Handle other languages
   try {
+    // @ts-ignore - Prism component import doesn't have types
     await import(`prismjs/components/prism-${lang}.js`);
   } catch {
     // ignore missing language
@@ -199,6 +226,8 @@ interface CodeBlockProps extends Block {
   onRunResult?: (output: string) => void;
   /** callback when edited code is saved */
   onCodeChange?: (code: string) => void;
+  /** hide the copy button (when parent component handles copying) */
+  hideCopyButton?: boolean;
 }
 
 export const CodeBlock = ({
@@ -212,6 +241,7 @@ export const CodeBlock = ({
   editable = false,
   onRunResult,
   onCodeChange,
+  hideCopyButton = false,
 }: CodeBlockProps) => {
   const [copied, setCopied] = useState(false);
   const [showNumbers, setShowNumbers] = useState(true);
@@ -241,17 +271,32 @@ export const CodeBlock = ({
       localStorage.setItem(storageKey, codeText);
       onCodeChange?.(codeText);
     }
-  }, [codeText, editing, storageKey, onCodeChange]);
-
-  useEffect(() => {
+  }, [codeText, editing, storageKey, onCodeChange]);  useEffect(() => {
     let cancelled = false;
     (async () => {
-      await loadLanguage(language);
-      const html = Prism.highlight(
-        codeText,
-        Prism.languages[language] || Prism.languages.plain,
-        language
-      );
+      // Normalize language name
+      let normalizedLang = language.toLowerCase();
+      if (normalizedLang === 'ts') normalizedLang = 'typescript';
+      if (normalizedLang === 'js') normalizedLang = 'javascript';
+      if (normalizedLang === 'tsx') normalizedLang = 'tsx';
+      if (normalizedLang === 'jsx') normalizedLang = 'jsx';
+      
+      await loadLanguage(normalizedLang);
+      
+      // Get the Prism language object with better fallbacks
+      let prismLang = Prism.languages[normalizedLang];
+      
+      // Fallback chain for TypeScript
+      if (!prismLang && normalizedLang === 'typescript') {
+        prismLang = Prism.languages.typescript || Prism.languages.javascript;
+      }
+      
+      // Final fallback
+      if (!prismLang) {
+        prismLang = Prism.languages.javascript || Prism.languages.plain;
+      }
+      
+      const html = Prism.highlight(codeText, prismLang, normalizedLang);
       if (!cancelled) {
         setHighlighted(html.trimEnd().split("\n"));
       }
@@ -341,20 +386,21 @@ export const CodeBlock = ({
           >
             <Search className="w-4 h-4" aria-hidden />
           </button>
-        </div>
-        <div className="flex gap-1">
-          <button
-            type="button"
-            aria-label="Copy code"
-            onClick={handleCopy}
-            className="text-gray-400 hover:text-white"
-          >
-            {copied ? (
-              <Check className="w-4 h-4" aria-hidden />
-            ) : (
-              <Copy className="w-4 h-4" aria-hidden />
-            )}
-          </button>
+        </div>        <div className="flex gap-1">
+          {!hideCopyButton && (
+            <button
+              type="button"
+              aria-label="Copy code"
+              onClick={handleCopy}
+              className="text-gray-400 hover:text-white"
+            >
+              {copied ? (
+                <Check className="w-4 h-4" aria-hidden />
+              ) : (
+                <Copy className="w-4 h-4" aria-hidden />
+              )}
+            </button>
+          )}
           <button
             type="button"
             aria-label="Download as markdown"
@@ -410,11 +456,10 @@ export const CodeBlock = ({
           placeholder="Search..."
         />
         {editing ? (
-          <div className="h-72">
-            <MonacoEditor
+          <div className="h-72">            <MonacoEditor
               language={language}
               value={codeText}
-              onChange={(val) => setCodeText(val || "")}
+              onChange={(val: string | undefined) => setCodeText(val || "")}
               theme="vs-dark"
               height="100%"
             />

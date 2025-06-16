@@ -1,13 +1,13 @@
 "use client";
-import React, { useState, Children } from "react";
+import React, { useState, Children, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
-import remarkFootnotes from "remark-footnotes";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import rehypeKatex from "rehype-katex";
 import { CodeBlock } from "./CodeBlock";
 import { MultiTabCodeBlock } from "./MultiTabCodeBlock";
+import { MarkdownViewer } from "./MarkdownViewer";
 import { parseMultiTabs } from "./parseMultiTabs";
 import { Callout, type CalloutType } from "./Callout";
 import { CollapsibleSection } from "./CollapsibleSection";
@@ -51,26 +51,104 @@ interface AdvancedMarkdownProps {
   content: string;
   showExport?: boolean;
   showShare?: boolean;
+  useEnhancedViewer?: boolean;
 }
 
 export const AdvancedMarkdown = ({
   content,
   showExport = false,
   showShare = false,
+  useEnhancedViewer = false,
 }: AdvancedMarkdownProps) => {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const segments = parseMultiTabs(content);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const schema: any = {
-    ...defaultSchema,
-    tagNames: [...(defaultSchema.tagNames || []), "details", "summary"],
-  };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rehypePlugins: any[] = [[rehypeSanitize, schema], rehypeKatex];
-  if (typeof window !== "undefined") {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mermaid = require("rehype-mermaid").default;
-    rehypePlugins.push(mermaid);
+  
+  // Configure plugins with proper async handling
+  const remarkPlugins = useMemo(() => [remarkGfm, remarkMath], []);
+  
+  const rehypePlugins = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const schema: any = {
+      ...defaultSchema,
+      tagNames: [...(defaultSchema.tagNames || []), "details", "summary"],
+    };
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const plugins: any[] = [[rehypeSanitize, schema], rehypeKatex];
+    
+    // Only add mermaid on client side to avoid SSR issues
+    if (typeof window !== "undefined") {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const mermaid = require("rehype-mermaid").default;
+        plugins.push(mermaid);
+      } catch (error) {
+        // Silently ignore if mermaid is not available
+        console.warn("Mermaid plugin not available:", error);
+      }
+    }
+      return plugins;
+  }, []);
+
+  // Check if content has structured sections that would benefit from enhanced viewer
+  const hasStructuredContent = useMemo(() => {
+    return content.includes('## ') || content.includes('# ') && content.includes('```');
+  }, [content]);
+
+  // Use enhanced viewer for structured content or when explicitly requested
+  if (useEnhancedViewer || hasStructuredContent) {
+    return (
+      <div className="prose prose-invert max-w-none relative">
+        {(showExport || showShare) && (
+          <div className="absolute right-0 top-0 flex gap-2 z-10">
+            {showExport && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Export as Markdown"
+                  onClick={() => exportMarkdown(content, "markdown")}
+                  className="p-1 text-gray-400 hover:text-white"
+                >
+                  <Download className="w-4 h-4" aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Export as HTML"
+                  onClick={() => exportMarkdown(content, "html")}
+                  className="p-1 text-gray-400 hover:text-white"
+                >
+                  <Download className="w-4 h-4" aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Export as PDF"
+                  onClick={() => exportMarkdown(content, "pdf")}
+                  className="p-1 text-gray-400 hover:text-white"
+                >
+                  <Download className="w-4 h-4" aria-hidden />
+                </button>
+              </>
+            )}
+            {showShare && (
+              <button
+                type="button"
+                aria-label="Share"
+                onClick={async () => {
+                  const url = await createShareLink(content);
+                  setShareUrl(url);
+                  await navigator.clipboard.writeText(url);
+                  alert("Share link copied to clipboard");
+                }}
+                className="p-1 text-gray-400 hover:text-white"
+              >
+                <Share2 className="w-4 h-4" aria-hidden />
+              </button>
+            )}
+          </div>
+        )}
+        <MarkdownViewer content={content} />
+      </div>
+    );
   }
   return (
     <div className="prose prose-invert max-w-none relative">
@@ -125,11 +203,10 @@ export const AdvancedMarkdown = ({
         if (seg.type === "tabs") {
           return <MultiTabCodeBlock key={i} markdown={seg.content} />;
         }
-        const sanitized = SecurityLayer.sanitize(seg.content);
-        return (
+        const sanitized = SecurityLayer.sanitize(seg.content);        return (
           <ReactMarkdown
             key={i}
-            remarkPlugins={[remarkGfm, remarkMath, remarkFootnotes]}
+            remarkPlugins={remarkPlugins}
             rehypePlugins={rehypePlugins}
             components={{
               // eslint-disable-next-line @typescript-eslint/no-explicit-any

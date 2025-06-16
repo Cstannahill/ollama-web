@@ -2,6 +2,7 @@
 import type { ChatMessage as Message } from "@/types";
 import { cn } from "@/lib/utils";
 import { AdvancedMarkdown } from "../markdown";
+import { ChatMarkdownViewer } from "../markdown/ChatMarkdownViewer";
 import { ErrorBoundary } from "../ui";
 import { useState } from "react";
 
@@ -30,6 +31,13 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
 
+  // Check if message content has complex formatting that would benefit from enhanced viewer
+  const hasComplexFormatting = message.content.includes('```') || 
+                              message.content.includes('# ') || 
+                              message.content.includes('## ') ||
+                              message.content.includes('$') ||
+                              message.content.includes('mermaid');
+
   return (
     <ErrorBoundary>
       <div
@@ -44,7 +52,7 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
           )}
         >
           <button
-            className="absolute top-2 right-2 opacity-50 hover:opacity-100 transition-opacity"
+            className="absolute top-2 right-2 opacity-50 hover:opacity-100 transition-opacity z-10"
             onClick={() => {
               navigator.clipboard.writeText(message.content);
               setCopied(true);
@@ -54,11 +62,19 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
           >
             <Copy className="w-4 h-4" />
           </button>
-          <div className="prose prose-sm max-w-none dark:prose-invert">
-            <AdvancedMarkdown content={message.content} />
+            <div className="prose prose-sm max-w-none dark:prose-invert">
+            {hasComplexFormatting && !isUser ? (
+              <ChatMarkdownViewer 
+                content={message.content}
+                className="bg-transparent"
+              />
+            ) : (
+              <AdvancedMarkdown content={message.content} />
+            )}
           </div>
+          
           {copied && (
-            <span className="absolute bottom-2 right-2 text-xs opacity-75">
+            <span className="absolute bottom-2 right-2 text-xs opacity-75 z-10">
               Copied
             </span>
           )}

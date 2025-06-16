@@ -8,4 +8,6 @@ export interface Model {
   performance?: string;
   /** Capability categories like "Vision", "Code", etc. */
   capabilities?: string[];
+  /** Whether the model is locally downloaded/pulled */
+  isDownloaded?: boolean;
 }

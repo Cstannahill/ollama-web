@@ -2,29 +2,25 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { SettingsSidebar } from "./SettingsSidebar";
 import {
   MessageSquare,
   Brain,
-  Settings,
   Menu,
   X,
   Zap,
   ArrowRight,
 } from "@/components/ui/icons";
-import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Chat", href: "/chat/new", icon: MessageSquare },
   { name: "Models", href: "/models", icon: Brain },
-  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -57,15 +53,11 @@ export function Navbar() {
         <div className="hidden lg:flex lg:gap-x-8">
           {navigation.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname.startsWith(item.href);
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className={cn(
-                  "flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary",
-                  isActive ? "text-primary" : "text-muted-foreground"
-                )}
+                className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
               >
                 <Icon className="h-4 w-4" />
                 <span>{item.name}</span>
@@ -74,6 +66,7 @@ export function Navbar() {
           })}
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:space-x-4">
+          <SettingsSidebar />
           <ThemeToggle />
           <Button asChild>
             <Link href="/chat/new" className="flex items-center">
@@ -112,15 +105,11 @@ export function Navbar() {
                 <div className="space-y-2 py-6">
                   {navigation.map((item) => {
                     const Icon = item.icon;
-                    const isActive = pathname.startsWith(item.href);
                     return (
                       <Link
                         key={item.name}
                         href={item.href}
-                        className={cn(
-                          "flex items-center space-x-3 rounded-lg px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                          isActive ? "bg-accent text-accent-foreground" : ""
-                        )}
+                        className="flex items-center space-x-3 rounded-lg px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <Icon className="h-5 w-5" />
@@ -133,6 +122,10 @@ export function Navbar() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Theme</span>
                     <ThemeToggle />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Settings</span>
+                    <SettingsSidebar />
                   </div>
                   <Button asChild className="w-full">
                     <Link href="/chat/new">Get Started</Link>

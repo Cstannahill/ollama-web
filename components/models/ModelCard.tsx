@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ModelInfoDialog } from "./ModelInfoDialog";
 import type { Model } from "@/types";
 import { useModelStore } from "@/stores/model-store";
 
@@ -178,11 +179,15 @@ export const ModelCard = ({
                     <Download className="w-4 h-4 mr-1" aria-hidden /> Download
                   </>
                 )}
-              </Button>
-            )}
-            <Button variant="outline" size="icon" aria-label="Model info">
-              <Info className="w-4 h-4" aria-hidden />
-            </Button>
+              </Button>            )}
+            <ModelInfoDialog 
+              model={model}
+              trigger={
+                <Button variant="outline" size="icon" aria-label="Model info">
+                  <Info className="w-4 h-4" aria-hidden />
+                </Button>
+              }
+            />
           </div>
         </div>
       </Card>
