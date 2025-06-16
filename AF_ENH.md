@@ -94,6 +94,36 @@ This document outlines potential improvements to strengthen the existing agentic
 - Export the conversation along with referenced documents as a bundled archive.
 - Facilitates offline review and sharing outside the application.
 
+### 21. Resumable Pipeline Execution
+- Save intermediate pipeline state so long-running steps can resume after interruptions.
+
+### 22. Step Output Caching
+- Cache results of expensive stages like embedding or retrieval to avoid repeated work.
+
+### 23. Adaptive Retrieval Depth
+- Dynamically adjust the number of documents retrieved based on conversation length.
+
+### 24. Pre/Post Step Hooks
+- Allow custom functions to run before and after each pipeline stage for advanced control.
+
+### 25. Multimodal Document Support
+- Retrieve and display images or other media alongside text context.
+
+### 26. Security and Permission Controls
+- Let users restrict plugin access to local files or network resources.
+
+### 27. Cloud Sync
+- Optionally synchronize settings and conversations across devices.
+
+### 28. Workflow Templates
+- Save common sequences of agentic actions as reusable templates.
+
+### 29. Scheduled Background Agents
+- Run agentic pipelines on a schedule and post results when ready.
+
+### 30. Onboarding Tour for Agentic Mode
+- Provide a guided walkthrough of advanced features when agentic mode is enabled.
+
 ## Next Steps
 1. Prioritize enhancements based on user feedback and performance metrics.
 2. Break down each improvement into standalone tasks under `docs/` with design sketches and type updates.
