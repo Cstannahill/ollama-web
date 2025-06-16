@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { SettingsSidebar } from "./SettingsSidebar";
+
 import {
   MessageSquare,
   Brain,
@@ -66,7 +66,6 @@ export function Navbar() {
           })}
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:space-x-4">
-          <SettingsSidebar />
           <ThemeToggle />
           <Button asChild>
             <Link href="/chat/new" className="flex items-center">
@@ -122,10 +121,6 @@ export function Navbar() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Theme</span>
                     <ThemeToggle />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Settings</span>
-                    <SettingsSidebar />
                   </div>
                   <Button asChild className="w-full">
                     <Link href="/chat/new">Get Started</Link>

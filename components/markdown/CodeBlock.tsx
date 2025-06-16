@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useId, useMemo } from "react";
+import { useState, useEffect, useId, useMemo, useCallback } from "react";
 import Prism from "prismjs";
 
 // Import core languages explicitly for better reliability
@@ -10,17 +10,16 @@ import "prismjs/components/prism-tsx";
 
 const loadLanguage = async (lang: string) => {
   if (!lang || Prism.languages[lang]) return;
-  
-  // Handle TypeScript specifically
+    // Handle TypeScript specifically
   if (lang === 'typescript' || lang === 'ts') {
     try {
-      // @ts-ignore - Prism component import doesn't have types
+      // @ts-expect-error - Prism component import doesn't have types
       await import('prismjs/components/prism-typescript.js');
       return;
     } catch {
       // fallback to javascript highlighting for typescript
       try {
-        // @ts-ignore
+        // @ts-expect-error - Prism component import doesn't have types
         await import('prismjs/components/prism-javascript.js');
       } catch {
         // ignore if javascript also fails
@@ -31,7 +30,7 @@ const loadLanguage = async (lang: string) => {
   
   // Handle other languages
   try {
-    // @ts-ignore - Prism component import doesn't have types
+    // @ts-expect-error - Prism component import doesn't have types
     await import(`prismjs/components/prism-${lang}.js`);
   } catch {
     // ignore missing language
@@ -250,10 +249,14 @@ export const CodeBlock = ({
   const [highlighted, setHighlighted] = useState<string[]>([]);
   const [filtered, setFiltered] = useState<string[]>([]);
   const [editing, setEditing] = useState(false);
-  const [codeText, setCodeText] = useState(code);
-  const [runOutput, setRunOutput] = useState<string>("");
+  const [codeText, setCodeText] = useState(code);  const [runOutput, setRunOutput] = useState<string>("");
   const id = useId();
   const storageKey = useMemo(() => `cb-${id}`, [id]);
+
+  // Memoize the onCodeChange callback to prevent infinite loops
+  const memoizedOnCodeChange = useCallback((code: string) => {
+    onCodeChange?.(code);
+  }, [onCodeChange]);
 
   useEffect(() => {
     setSearch(externalSearch);
@@ -264,14 +267,12 @@ export const CodeBlock = ({
     if (stored) {
       setCodeText(stored);
     }
-  }, [storageKey]);
-
-  useEffect(() => {
+  }, [storageKey]);  useEffect(() => {
     if (editing) {
       localStorage.setItem(storageKey, codeText);
-      onCodeChange?.(codeText);
+      memoizedOnCodeChange(codeText);
     }
-  }, [codeText, editing, storageKey, onCodeChange]);  useEffect(() => {
+  }, [codeText, editing, storageKey, memoizedOnCodeChange]);useEffect(() => {
     let cancelled = false;
     (async () => {
       // Normalize language name

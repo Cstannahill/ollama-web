@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { CodeBlock } from "./CodeBlock";
-import { Copy } from "@/components/ui/icons";
 
 interface EnhancedTabCodeBlockProps {
   title?: string;

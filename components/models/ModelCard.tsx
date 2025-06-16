@@ -96,6 +96,71 @@ function getModelGradient(caps?: string[]) {
   return "from-indigo-600 to-blue-600";
 }
 
+// Determine if a model is good for specific tasks
+function getModelHints(modelName: string) {
+  const name = modelName.toLowerCase();
+  const hints = [];
+
+  // Embedding models
+  if (
+    name.includes("embed") ||
+    name.includes("nomic") ||
+    name.includes("minilm") ||
+    name.includes("sentence") ||
+    name.includes("all-") ||
+    name.includes("bge")
+  ) {
+    hints.push({
+      type: "embedding",
+      label: "🔍 Great for Embedding",
+      description: "Excellent for document similarity and vector search",
+    });
+  }
+
+  // Good reranking models (general chat models work well for reranking)
+  if (
+    name.includes("llama") ||
+    name.includes("mistral") ||
+    name.includes("qwen") ||
+    name.includes("gemma") ||
+    name.includes("phi")
+  ) {
+    hints.push({
+      type: "reranking",
+      label: "🎯 Good for Reranking",
+      description: "Can effectively rank and refine search results",
+    });
+  }
+
+  // Code models
+  if (
+    name.includes("code") ||
+    name.includes("coder") ||
+    name.includes("deepseek-coder")
+  ) {
+    hints.push({
+      type: "code",
+      label: "💻 Code Specialist",
+      description: "Optimized for programming and code generation",
+    });
+  }
+
+  // Vision models
+  if (
+    name.includes("vision") ||
+    name.includes("visual") ||
+    name.includes("llava")
+  ) {
+    hints.push({
+      type: "vision",
+      label: "👁️ Vision Capable",
+      description: "Can process and understand images",
+    });
+  }
+
+  return hints;
+}
+
 interface ModelCardProps {
   model: Model;
   onSelect: (model: Model) => void;
@@ -108,6 +173,8 @@ export const ModelCard = ({
   isDownloaded,
 }: ModelCardProps) => {
   const { downloadModel, downloadProgress, markUsed } = useModelStore();
+  const modelHints = getModelHints(model.name);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -143,6 +210,21 @@ export const ModelCard = ({
               </p>
             )}
           </div>
+          {/* Model hints for agentic use cases */}
+          {modelHints.length > 0 && (
+            <div className="space-y-1">
+              {modelHints.slice(0, 2).map((hint) => (
+                <div
+                  key={hint.type}
+                  className="text-xs px-2 py-1 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded-md border border-blue-200 dark:border-blue-800"
+                  title={hint.description}
+                >
+                  {hint.label}
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <Cpu className="w-3 h-3" aria-hidden />
@@ -179,8 +261,9 @@ export const ModelCard = ({
                     <Download className="w-4 h-4 mr-1" aria-hidden /> Download
                   </>
                 )}
-              </Button>            )}
-            <ModelInfoDialog 
+              </Button>
+            )}
+            <ModelInfoDialog
               model={model}
               trigger={
                 <Button variant="outline" size="icon" aria-label="Model info">

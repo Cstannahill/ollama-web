@@ -153,22 +153,24 @@ export const useChatStore = create<ChatState>((set, get) => ({
           if (out.type === "tokens") {
             set({ tokens: out.count });
             continue;
-          }
-          if (out.type === "tool") {
+          }          if (out.type === "tool") {
             set((state) => ({
               tools: [...state.tools, { name: out.name, output: out.output }],
             }));
             continue;
           }
-          assistant = {
-            ...assistant,
-            content: assistant.content + out.chunk.message,
-          };
-          set((state) => {
-            const msgs = [...state.messages];
-            msgs[msgs.length - 1] = assistant;
-            return { messages: msgs };
-          });
+          // Fix: Add proper type checking for chat messages
+          if (out.type === "chat" && out.chunk && out.chunk.message) {
+            assistant = {
+              ...assistant,
+              content: assistant.content + out.chunk.message,
+            };
+            set((state) => {
+              const msgs = [...state.messages];
+              msgs[msgs.length - 1] = assistant;
+              return { messages: msgs };
+            });
+          }
           if (controller.signal.aborted) return;
         }
       } catch (error) {

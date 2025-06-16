@@ -6,8 +6,20 @@ import { useChatStore } from "@/stores/chat-store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { OllamaClient } from "@/lib/ollama/client";
@@ -23,7 +35,7 @@ const Settings = ({ className }: { className?: string }) => (
   >
     <path
       strokeLinecap="round"
-      strokeLinejoin="round"  
+      strokeLinejoin="round"
       strokeWidth={2}
       d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
     />
@@ -46,9 +58,15 @@ export const EnhancedChatSettings = () => {
     setEmbeddingModel,
     setRerankingModel,
     setVectorStorePath,
+    agenticConfig,
+    setAgenticConfig,
+    validateAgenticSetup,
   } = useSettingsStore();
   const { mode, isStreaming } = useChatStore();
   const [availableModels, setAvailableModels] = useState<string[]>([]);
+
+  // Get validation state
+  const validation = validateAgenticSetup();
 
   // Load available models when component mounts
   useEffect(() => {
@@ -217,51 +235,174 @@ export const EnhancedChatSettings = () => {
             <>
               <Separator />
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-foreground">
-                  Agentic Mode Settings
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Agentic Mode Settings
+                  </h3>
+                  <Badge
+                    variant={validation.isValid ? "default" : "destructive"}
+                    className="text-xs"
+                  >
+                    {validation.isValid ? "Complete" : "Incomplete"}
+                  </Badge>
+                </div>
+
+                {/* Validation Messages */}
+                {!validation.isValid && (
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+                    <p className="text-sm text-destructive font-medium mb-1">
+                      Missing Configuration:
+                    </p>
+                    <ul className="text-xs text-destructive/80 space-y-1">
+                      {validation.missingFields.map((field) => (
+                        <li key={field}>• {field}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {validation.warnings.length > 0 && (
+                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
+                    <p className="text-sm text-yellow-600 font-medium mb-1">
+                      Warnings:
+                    </p>
+                    <ul className="text-xs text-yellow-600/80 space-y-1">
+                      {validation.warnings.map((warning, idx) => (
+                        <li key={idx}>• {warning}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 <div className="space-y-3">
                   <Label>
                     Vector Store Path
                     <span className="text-xs text-muted-foreground ml-1">
-                      (Knowledge base location)
+                      (Local directory for your knowledge base)
                     </span>
                   </Label>
-                  <Input
-                    value={vectorStorePath || ""}
-                    onChange={(e) => setVectorStorePath(e.target.value)}
-                    placeholder="S:\\Knowledge"
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      value={vectorStorePath || ""}
+                      onChange={(e) => setVectorStorePath(e.target.value)}
+                      placeholder="e.g., C:\\Users\\YourName\\ollama-vectors or ~/Documents/ollama-vectors"
+                      className={`flex-1 ${!vectorStorePath ? "border-destructive/50" : ""}`}
+                    />
+                    <input
+                      type="file"
+                      webkitdirectory=""
+                      directory=""
+                      multiple={false}
+                      style={{ display: "none" }}
+                      id="directory-picker"
+                      onChange={(e) => {
+                        const files = e.target.files;
+                        if (files && files.length > 0) {
+                          // Extract directory path from the first file
+                          const firstFile = files[0];
+                          const fullPath = firstFile.webkitRelativePath;
+                          if (fullPath) {
+                            // Get the root directory path
+                            const pathParts = fullPath.split("/");
+                            if (pathParts.length > 1) {
+                              const directoryName = pathParts[0];
+                              setVectorStorePath(directoryName);
+                            }
+                          }
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const fileInput = document.getElementById(
+                          "directory-picker"
+                        ) as HTMLInputElement;
+                        fileInput?.click();
+                      }}
+                      className="px-3 shrink-0"
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-5l-2-2H6a2 2 0 00-2 2z"
+                        />
+                      </svg>
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Important:</strong> This should be a local directory
+                    on your computer where the vector database will be stored.
+                    The folder will be created if it doesn&apos;t exist.
+                    Examples: &quot;C:\ollama-vectors&quot; or
+                    &quot;/home/user/ollama-vectors&quot;
+                  </p>
                 </div>
 
                 <div className="space-y-3">
                   <Label>
                     Embedding Model
                     <span className="text-xs text-muted-foreground ml-1">
-                      (For document similarity)
+                      (For document similarity and vector search)
                     </span>
                   </Label>
                   <Select
                     value={embeddingModel || ""}
                     onValueChange={setEmbeddingModel}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger
+                      className={!embeddingModel ? "border-destructive/50" : ""}
+                    >
                       <SelectValue placeholder="Select embedding model" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="nomic-embed-text">nomic-embed-text</SelectItem>
-                      <SelectItem value="all-minilm">all-minilm</SelectItem>
-                      <SelectItem value="sentence-transformers">sentence-transformers</SelectItem>
+                      <SelectItem value="nomic-embed-text">
+                        <div className="flex flex-col">
+                          <span>nomic-embed-text</span>
+                          <span className="text-xs text-muted-foreground">
+                            Recommended - General purpose embedding model
+                          </span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="all-minilm">
+                        <div className="flex flex-col">
+                          <span>all-minilm</span>
+                          <span className="text-xs text-muted-foreground">
+                            Lightweight - Fast but less accurate
+                          </span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="sentence-transformers">
+                        <div className="flex flex-col">
+                          <span>sentence-transformers</span>
+                          <span className="text-xs text-muted-foreground">
+                            High quality - Best for semantic understanding
+                          </span>
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    💡 <strong>Tip:</strong> &quot;nomic-embed-text&quot; is
+                    recommended for most use cases. Make sure the model is
+                    downloaded in Ollama first.
+                  </p>
                 </div>
 
                 <div className="space-y-3">
                   <Label>
                     Reranking Model
                     <span className="text-xs text-muted-foreground ml-1">
-                      (For result refinement)
+                      (For refining and ranking search results)
                     </span>
                   </Label>
                   <Select
@@ -272,15 +413,166 @@ export const EnhancedChatSettings = () => {
                       <SelectValue placeholder="Select reranking model" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="none">
+                        <div className="flex flex-col">
+                          <span>None</span>
+                          <span className="text-xs text-muted-foreground">
+                            Skip reranking - Faster but less accurate
+                          </span>
+                        </div>
+                      </SelectItem>
                       {availableModels.map((model) => (
                         <SelectItem key={model} value={model}>
-                          {model}
+                          <div className="flex flex-col">
+                            <span>{model}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {model.toLowerCase().includes("llama")
+                                ? "🎯 Excellent for reranking"
+                                : model.toLowerCase().includes("mistral")
+                                  ? "🎯 Good for reranking"
+                                  : model.toLowerCase().includes("qwen")
+                                    ? "🎯 Good for reranking"
+                                    : model.toLowerCase().includes("gemma")
+                                      ? "🎯 Good for reranking"
+                                      : model.toLowerCase().includes("phi")
+                                        ? "🎯 Good for reranking"
+                                        : "General chat model"}
+                            </span>
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    💡 <strong>Tip:</strong> Use any chat model for reranking.
+                    Llama, Mistral, and Qwen models work particularly well.
+                  </p>
                 </div>
+
+                {/* Advanced Agentic Settings */}
+                <Separator />
+                <div className="space-y-4">
+                  <h4 className="text-sm font-medium text-foreground">
+                    Advanced Options
+                  </h4>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <Label>
+                        Max Retrieval Docs
+                        <span className="text-xs text-muted-foreground ml-1">
+                          ({agenticConfig.maxRetrievalDocs})
+                        </span>
+                      </Label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="20"
+                        step="1"
+                        value={agenticConfig.maxRetrievalDocs}
+                        onChange={(e) =>
+                          setAgenticConfig({
+                            maxRetrievalDocs: parseInt(e.target.value),
+                          })
+                        }
+                        className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label>
+                        Context Summary Length
+                        <span className="text-xs text-muted-foreground ml-1">
+                          ({agenticConfig.contextSummaryLength})
+                        </span>
+                      </Label>
+                      <input
+                        type="range"
+                        min="100"
+                        max="1000"
+                        step="50"
+                        value={agenticConfig.contextSummaryLength}
+                        onChange={(e) =>
+                          setAgenticConfig({
+                            contextSummaryLength: parseInt(e.target.value),
+                          })
+                        }
+                        className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label>
+                        Query Rewriting
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (Enhance queries for better results)
+                        </span>
+                      </Label>
+                      <input
+                        type="checkbox"
+                        checked={agenticConfig.enableQueryRewriting}
+                        onChange={(e) =>
+                          setAgenticConfig({
+                            enableQueryRewriting: e.target.checked,
+                          })
+                        }
+                        className="w-4 h-4"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label>
+                        Response Summarization
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (Summarize long responses)
+                        </span>
+                      </Label>
+                      <input
+                        type="checkbox"
+                        checked={agenticConfig.enableResponseSummarization}
+                        onChange={(e) =>
+                          setAgenticConfig({
+                            enableResponseSummarization: e.target.checked,
+                          })
+                        }
+                        className="w-4 h-4"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label>
+                        Caching
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (Cache results for performance)
+                        </span>
+                      </Label>
+                      <input
+                        type="checkbox"
+                        checked={agenticConfig.cachingEnabled}
+                        onChange={(e) =>
+                          setAgenticConfig({ cachingEnabled: e.target.checked })
+                        }
+                        className="w-4 h-4"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recommendations */}
+                {validation.recommendations.length > 0 && (
+                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                    <p className="text-sm text-blue-600 font-medium mb-1">
+                      Recommendations:
+                    </p>
+                    <ul className="text-xs text-blue-600/80 space-y-1">
+                      {validation.recommendations.map((rec, idx) => (
+                        <li key={idx}>• {rec}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </>
           )}

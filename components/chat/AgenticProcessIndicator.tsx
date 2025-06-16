@@ -29,6 +29,16 @@ export const AgenticProcessIndicator = () => {
 
   const processSteps = [
     {
+      key: "Rewriting query for better results",
+      label: "Rewriting",
+      description: "Optimizing query for better results",
+    },
+    {  
+      key: "Embedding",
+      label: "Embedding",
+      description: "Converting your question to vector representation",
+    },
+    {
       key: "Embedding query",
       label: "Embedding",
       description: "Converting your question to vector representation",
@@ -39,9 +49,24 @@ export const AgenticProcessIndicator = () => {
       description: "Searching knowledge base for relevant documents",
     },
     {
+      key: "Retrieving relevant documents",
+      label: "Retrieving",
+      description: "Searching knowledge base for relevant documents",
+    },
+    {
       key: "Reranking results",
       label: "Reranking",
       description: "Intelligently ranking results by relevance",
+    },
+    {
+      key: "Reranking results for relevance",
+      label: "Reranking",
+      description: "Intelligently ranking results by relevance",
+    },
+    {
+      key: "Building context from documents",
+      label: "Context",
+      description: "Processing retrieved information",
     },
     {
       key: "Summarizing context",
@@ -49,9 +74,19 @@ export const AgenticProcessIndicator = () => {
       description: "Processing retrieved information",
     },
     {
+      key: "Assembling final prompt",
+      label: "Assembling",
+      description: "Constructing enhanced prompt with context",
+    },
+    {
       key: "Building prompt",
       label: "Building",
       description: "Constructing enhanced prompt with context",
+    },
+    {
+      key: "Generating response",
+      label: "Generating",
+      description: "AI model generating response",
     },
     {
       key: "Invoking model",
@@ -69,6 +104,12 @@ export const AgenticProcessIndicator = () => {
     (step) => step.key === status
   );
   const currentStep = processSteps[currentStepIndex];
+  
+  // Fallback for unknown status messages
+  const displayStep = currentStep || {
+    label: "Processing",
+    description: status || "Working on your request...",
+  };
   const progress =
     currentStepIndex >= 0
       ? ((currentStepIndex + 1) / processSteps.length) * 100
@@ -89,13 +130,13 @@ export const AgenticProcessIndicator = () => {
       <div className="space-y-3">
         <Progress value={progress} className="h-2" />
 
-        {currentStep && (
+        {displayStep && (
           <div className="text-sm">
             <div className="font-medium text-foreground mb-1">
-              {currentStep.label}
+              {displayStep.label}
             </div>
             <div className="text-muted-foreground text-xs">
-              {currentStep.description}
+              {displayStep.description}
             </div>
           </div>
         )}
