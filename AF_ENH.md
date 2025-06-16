@@ -54,6 +54,46 @@ This document outlines potential improvements to strengthen the existing agentic
 - Provide a configuration screen for reordering or disabling individual pipeline steps.
 - Developers can experiment with alternate flows without modifying core code.
 
+### 11. Real-Time Pipeline Visualization
+- Display an interactive timeline of each pipeline stage in the chat UI.
+- Helps users understand where time is spent and debug issues quickly.
+
+### 12. Parameter Presets
+- Allow saving multiple named configuration presets for agentic settings.
+- Enables quick switching between retrieval strategies or models.
+
+### 13. Multi-Turn Retrieval
+- Chain document retrieval across recent messages to maintain context over long conversations.
+- Provides more coherent answers when a thread spans many turns.
+
+### 14. Smart Fallback to Simple Mode
+- Automatically revert to simple chat when the agentic pipeline encounters repeated errors.
+- Prevents frustration from stalled conversations and logs the failure for later review.
+
+### 15. Voice Dictation and Read-Aloud
+- Integrate speech-to-text for message input and text-to-speech for responses.
+- Improves accessibility and hands-free usage.
+
+### 16. Shareable Session Links
+- Generate short-lived links to share a conversation thread with its context.
+- Useful for collaborative troubleshooting or showcasing answers.
+
+### 17. Auto Summary on Long Responses
+- Summarize lengthy model outputs into bullet points displayed in a collapsible section.
+- Lets users scan key takeaways without scrolling.
+
+### 18. Template-Based System Prompts
+- Provide reusable system prompt templates with variable placeholders.
+- Users can customize prompts without rewriting them for every chat.
+
+### 19. Developer Debug Console
+- Expose optional verbose logs and intermediate queries in an advanced panel.
+- Assists power users in tuning retrieval quality.
+
+### 20. Data Export of Context and Messages
+- Export the conversation along with referenced documents as a bundled archive.
+- Facilitates offline review and sharing outside the application.
+
 ## Next Steps
 1. Prioritize enhancements based on user feedback and performance metrics.
 2. Break down each improvement into standalone tasks under `docs/` with design sketches and type updates.
