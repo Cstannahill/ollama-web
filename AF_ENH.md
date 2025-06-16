@@ -124,6 +124,46 @@ This document outlines potential improvements to strengthen the existing agentic
 ### 30. Onboarding Tour for Agentic Mode
 - Provide a guided walkthrough of advanced features when agentic mode is enabled.
 
+### 31. Multi-Vector Store Support
+- Allow configuring and querying multiple vector stores.
+- Supports hybrid knowledge bases for specialized domains.
+
+### 32. Role-Based Permissions
+- Restrict advanced settings and plugins based on user roles.
+- Protects sensitive actions like document indexing or plugin management.
+
+### 33. Multi-Agent Coordination
+- Chain multiple agents with specialized skills within a single conversation.
+- Enables complex workflows such as research followed by summarization.
+
+### 34. Automated Index Updates
+- Schedule background tasks to refresh vector stores from new documents.
+- Keeps knowledge sources up to date without manual intervention.
+
+### 35. Real-Time Collaboration
+- Allow multiple users to join the same conversation and share context.
+- Useful for pair programming or team troubleshooting sessions.
+
+### 36. User Feedback Loop
+- Let users rate responses and flag issues directly in the chat interface.
+- Pipeline adapts over time based on aggregated feedback.
+
+### 37. Themed Pipeline States
+- Customize UI colors or animations for each pipeline step.
+- Provides clearer visual cues during complex operations.
+
+### 38. Per-Step Model Switching
+- Choose different LLMs or embedding models for individual pipeline stages.
+- Optimizes cost and quality by matching models to tasks.
+
+### 39. Global Conversation Search
+- Full-text search across all saved conversations and context documents.
+- Quickly locate past answers or reference material.
+
+### 40. Interactive Coaching Mode
+- Display detailed explanations of each pipeline step while processing.
+- Helps new users understand how agentic mode works.
+
 ## Next Steps
 1. Prioritize enhancements based on user feedback and performance metrics.
 2. Break down each improvement into standalone tasks under `docs/` with design sketches and type updates.
