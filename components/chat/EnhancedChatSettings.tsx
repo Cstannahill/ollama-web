@@ -84,7 +84,7 @@ export const EnhancedChatSettings = () => {
 
   const handleSliderChange = (
     key: keyof typeof chatSettings,
-    value: number
+    value: number,
   ) => {
     updateChatSettings({ [key]: value });
   };
@@ -290,7 +290,9 @@ export const EnhancedChatSettings = () => {
                     />
                     <input
                       type="file"
+                      /* @ts-ignore - non-standard attribute for directory picking */
                       webkitdirectory=""
+                      /* @ts-ignore - non-standard attribute for directory picking */
                       directory=""
                       multiple={false}
                       style={{ display: "none" }}
@@ -298,11 +300,11 @@ export const EnhancedChatSettings = () => {
                       onChange={(e) => {
                         const files = e.target.files;
                         if (files && files.length > 0) {
-                          // Extract directory path from the first file
-                          const firstFile = files[0];
+                          const firstFile = files[0] as File & {
+                            webkitRelativePath?: string;
+                          };
                           const fullPath = firstFile.webkitRelativePath;
                           if (fullPath) {
-                            // Get the root directory path
                             const pathParts = fullPath.split("/");
                             if (pathParts.length > 1) {
                               const directoryName = pathParts[0];
@@ -316,11 +318,27 @@ export const EnhancedChatSettings = () => {
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        const fileInput = document.getElementById(
-                          "directory-picker"
-                        ) as HTMLInputElement;
-                        fileInput?.click();
+                      onClick={async () => {
+                        const dirPicker = (
+                          window as unknown as {
+                            showDirectoryPicker?: () => Promise<{
+                              name: string;
+                            }>;
+                          }
+                        ).showDirectoryPicker;
+                        if (dirPicker) {
+                          try {
+                            const dir = await dirPicker();
+                            setVectorStorePath(dir.name);
+                          } catch (err) {
+                            console.error("Directory selection cancelled", err);
+                          }
+                        } else {
+                          const fileInput = document.getElementById(
+                            "directory-picker",
+                          ) as HTMLInputElement;
+                          fileInput?.click();
+                        }
                       }}
                       className="px-3 shrink-0"
                     >

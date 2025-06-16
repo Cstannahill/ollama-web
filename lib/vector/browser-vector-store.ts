@@ -1,11 +1,7 @@
-import { VectorStore } from "@lancedb/lancedb/web";
-
 export class BrowserVectorStore {
-  private db!: unknown;
+  private uri: string | null = null;
 
-  async initialize() {
-    this.db = await VectorStore.create({
-      uri: "indexeddb://ollama-vectors",
-    });
+  async initialize(path: string) {
+    this.uri = path.startsWith("indexeddb://") ? path : `indexeddb://${path}`;
   }
 }
