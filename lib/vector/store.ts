@@ -8,11 +8,13 @@ import type {
 import { EmbeddingService } from "@/services/embedding-service";
 import { useSettingsStore } from "@/stores/settings-store";
 import { OLLAMA_BASE_URL } from "@/lib/config";
+import { BrowserVectorStore } from "./browser-vector-store";
 
 export class VectorStoreService {
   private initialized = false;
   private docs: Document[] = [];
   private embeddings: Embedding[] = [];
+  private store: BrowserVectorStore | null = null;
 
   private searchCache = new Map<
     string,
@@ -26,53 +28,72 @@ export class VectorStoreService {
 
   async initialize(options?: VectorStoreOptions): Promise<void> {
     if (this.initialized) return;
-    
+
     // Get settings from store to validate setup
     const settings = useSettingsStore.getState();
     const validation = settings.validateAgenticSetup();
-    
+
     if (!validation.isValid) {
-      console.warn("Vector store initialized with incomplete agentic setup:", validation.missingFields);
+      console.warn(
+        "Vector store initialized with incomplete agentic setup:",
+        validation.missingFields,
+      );
     }
-      // Use vector store path from settings if available
-    const vectorStorePath = settings.agenticConfig.vectorStorePath || options?.storagePath;
+    // Use vector store path from settings if available
+    const vectorStorePath =
+      settings.agenticConfig.vectorStorePath || options?.storagePath;
     if (vectorStorePath) {
+      this.store = new BrowserVectorStore();
+      await this.store.initialize(vectorStorePath);
       console.log("Vector store initialized with path:", vectorStorePath);
     }
-    
+
     this.initialized = true;
   }
 
-  async addConversation(conversationId: string, messages: Document[]): Promise<void> {
+  async addConversation(
+    conversationId: string,
+    messages: Document[],
+  ): Promise<void> {
     void conversationId;
     if (!this.initialized) throw new Error("Vector store not initialized");
-    
+
     // Get embedding model from settings
     const settings = useSettingsStore.getState();
-    const embeddingModel = settings.agenticConfig.embeddingModel || "nomic-embed-text";
-    
+    const embeddingModel =
+      settings.agenticConfig.embeddingModel || "nomic-embed-text";
+
     const texts = messages.map((m) => m.text);
     try {
-      const embs = await this.embedder.generateEmbeddings(texts, embeddingModel);
+      const embs = await this.embedder.generateEmbeddings(
+        texts,
+        embeddingModel,
+      );
       this.docs.push(...messages);
       this.embeddings.push(...embs);
     } catch (error) {
       console.error("Failed to add conversation to vector store:", error);
-      throw new Error(`Vector store operation failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+      throw new Error(
+        `Vector store operation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
-  async search(query: string, filters?: SearchFilters): Promise<SearchResult[]> {
+  async search(
+    query: string,
+    filters?: SearchFilters,
+  ): Promise<SearchResult[]> {
     if (!this.initialized) throw new Error("Vector store not initialized");
-    
+
     // Get settings for caching and embedding model
     const settings = useSettingsStore.getState();
     const cachingEnabled = settings.agenticConfig.cachingEnabled;
-    const embeddingModel = settings.agenticConfig.embeddingModel || "nomic-embed-text";
+    const embeddingModel =
+      settings.agenticConfig.embeddingModel || "nomic-embed-text";
     const maxRetrievalDocs = settings.agenticConfig.maxRetrievalDocs || 5;
-    
+
     const key = JSON.stringify({ query, filters, embeddingModel });
     const cached = this.searchCache.get(key);
-    
+
     // Use cache only if caching is enabled
     if (cachingEnabled && cached && Date.now() - cached.time < this.CACHE_TTL) {
       this.cacheOrder = this.cacheOrder.filter((k) => k !== key);
@@ -93,7 +114,7 @@ export class VectorStoreService {
       results.sort((a, b) => b.score - a.score);
       const topK = filters?.topK || maxRetrievalDocs;
       const sliced = results.slice(0, topK);
-      
+
       if (cachingEnabled) {
         this.searchCache.set(key, { results: sliced, time: Date.now() });
         this.cacheOrder.push(key);
@@ -102,11 +123,13 @@ export class VectorStoreService {
           if (oldest) this.searchCache.delete(oldest);
         }
       }
-      
+
       return sliced;
     } catch (error) {
       console.error("Vector store search failed:", error);
-      throw new Error(`Vector search failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+      throw new Error(
+        `Vector search failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -125,4 +148,3 @@ export class VectorStoreService {
     };
   }
 }
-

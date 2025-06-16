@@ -10,27 +10,26 @@ import "prismjs/components/prism-tsx";
 
 const loadLanguage = async (lang: string) => {
   if (!lang || Prism.languages[lang]) return;
-    // Handle TypeScript specifically
-  if (lang === 'typescript' || lang === 'ts') {
+  // Handle TypeScript specifically
+  if (lang === "typescript" || lang === "ts") {
     try {
       // @ts-expect-error - Prism component import doesn't have types
-      await import('prismjs/components/prism-typescript.js');
+      await import("prismjs/components/prism-typescript.js");
       return;
     } catch {
       // fallback to javascript highlighting for typescript
       try {
         // @ts-expect-error - Prism component import doesn't have types
-        await import('prismjs/components/prism-javascript.js');
+        await import("prismjs/components/prism-javascript.js");
       } catch {
         // ignore if javascript also fails
       }
       return;
     }
   }
-  
+
   // Handle other languages
   try {
-    // @ts-expect-error - Prism component import doesn't have types
     await import(`prismjs/components/prism-${lang}.js`);
   } catch {
     // ignore missing language
@@ -203,11 +202,11 @@ const execute = (src: string, lang: string): Promise<string> => {
     window.addEventListener("message", handler);
     if (lang === "javascript") {
       iframe.srcdoc = `<script>window.parent.postMessage((()=>{try{return eval(${JSON.stringify(
-        src
+        src,
       )});}catch(e){return 'Error: '+e.message}})(),'*');<\/script>`;
     } else {
       iframe.srcdoc = `<!doctype html><script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script><script>async function r(){const p=await loadPyodide();try{const res=await p.runPythonAsync(${JSON.stringify(
-        src
+        src,
       )});parent.postMessage(res,'*');}catch(e){parent.postMessage('Error: '+e.message,'*')}}r();<\/script>`;
     }
     document.body.appendChild(iframe);
@@ -249,14 +248,18 @@ export const CodeBlock = ({
   const [highlighted, setHighlighted] = useState<string[]>([]);
   const [filtered, setFiltered] = useState<string[]>([]);
   const [editing, setEditing] = useState(false);
-  const [codeText, setCodeText] = useState(code);  const [runOutput, setRunOutput] = useState<string>("");
+  const [codeText, setCodeText] = useState(code);
+  const [runOutput, setRunOutput] = useState<string>("");
   const id = useId();
   const storageKey = useMemo(() => `cb-${id}`, [id]);
 
   // Memoize the onCodeChange callback to prevent infinite loops
-  const memoizedOnCodeChange = useCallback((code: string) => {
-    onCodeChange?.(code);
-  }, [onCodeChange]);
+  const memoizedOnCodeChange = useCallback(
+    (code: string) => {
+      onCodeChange?.(code);
+    },
+    [onCodeChange],
+  );
 
   useEffect(() => {
     setSearch(externalSearch);
@@ -267,36 +270,38 @@ export const CodeBlock = ({
     if (stored) {
       setCodeText(stored);
     }
-  }, [storageKey]);  useEffect(() => {
+  }, [storageKey]);
+  useEffect(() => {
     if (editing) {
       localStorage.setItem(storageKey, codeText);
       memoizedOnCodeChange(codeText);
     }
-  }, [codeText, editing, storageKey, memoizedOnCodeChange]);useEffect(() => {
+  }, [codeText, editing, storageKey, memoizedOnCodeChange]);
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       // Normalize language name
       let normalizedLang = language.toLowerCase();
-      if (normalizedLang === 'ts') normalizedLang = 'typescript';
-      if (normalizedLang === 'js') normalizedLang = 'javascript';
-      if (normalizedLang === 'tsx') normalizedLang = 'tsx';
-      if (normalizedLang === 'jsx') normalizedLang = 'jsx';
-      
+      if (normalizedLang === "ts") normalizedLang = "typescript";
+      if (normalizedLang === "js") normalizedLang = "javascript";
+      if (normalizedLang === "tsx") normalizedLang = "tsx";
+      if (normalizedLang === "jsx") normalizedLang = "jsx";
+
       await loadLanguage(normalizedLang);
-      
+
       // Get the Prism language object with better fallbacks
       let prismLang = Prism.languages[normalizedLang];
-      
+
       // Fallback chain for TypeScript
-      if (!prismLang && normalizedLang === 'typescript') {
+      if (!prismLang && normalizedLang === "typescript") {
         prismLang = Prism.languages.typescript || Prism.languages.javascript;
       }
-      
+
       // Final fallback
       if (!prismLang) {
         prismLang = Prism.languages.javascript || Prism.languages.plain;
       }
-      
+
       const html = Prism.highlight(codeText, prismLang, normalizedLang);
       if (!cancelled) {
         setHighlighted(html.trimEnd().split("\n"));
@@ -317,8 +322,8 @@ export const CodeBlock = ({
       highlighted.map((l) =>
         l.toLowerCase().includes(q)
           ? l.replace(new RegExp(q, "gi"), (m) => `<mark>${m}</mark>`)
-          : l
-      )
+          : l,
+      ),
     );
   }, [search, highlighted]);
 
@@ -387,7 +392,8 @@ export const CodeBlock = ({
           >
             <Search className="w-4 h-4" aria-hidden />
           </button>
-        </div>        <div className="flex gap-1">
+        </div>{" "}
+        <div className="flex gap-1">
           {!hideCopyButton && (
             <button
               type="button"
@@ -457,7 +463,9 @@ export const CodeBlock = ({
           placeholder="Search..."
         />
         {editing ? (
-          <div className="h-72">            <MonacoEditor
+          <div className="h-72">
+            {" "}
+            <MonacoEditor
               language={language}
               value={codeText}
               onChange={(val: string | undefined) => setCodeText(val || "")}
@@ -509,6 +517,6 @@ export const CodeBlock = ({
         {body}
       </div>
     </div>,
-    document.body
+    document.body,
   );
 };

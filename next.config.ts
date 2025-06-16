@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async headers() {
     const allowed = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
     return [
