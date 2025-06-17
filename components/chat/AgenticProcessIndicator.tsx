@@ -33,7 +33,7 @@ export const AgenticProcessIndicator = () => {
       label: "Rewriting",
       description: "Optimizing query for better results",
     },
-    {  
+    {
       key: "Embedding",
       label: "Embedding",
       description: "Converting your question to vector representation",
@@ -54,6 +54,11 @@ export const AgenticProcessIndicator = () => {
       description: "Searching knowledge base for relevant documents",
     },
     {
+      key: "Retrieving relevant documents (multi-turn)",
+      label: "Multi-Turn Retrieval",
+      description: "Analyzing conversation history for enhanced context",
+    },
+    {
       key: "Reranking results",
       label: "Reranking",
       description: "Intelligently ranking results by relevance",
@@ -67,6 +72,21 @@ export const AgenticProcessIndicator = () => {
       key: "Building context from documents",
       label: "Context",
       description: "Processing retrieved information",
+    },
+    {
+      key: "Searching for current information online",
+      label: "Web Search",
+      description: "Finding current information online",
+    },
+    {
+      key: "Finding relevant web resources",
+      label: "Web Search",
+      description: "Searching for helpful web resources",
+    },
+    {
+      key: "Augmenting knowledge with web search",
+      label: "Web Search",
+      description: "Enhancing context with web search",
     },
     {
       key: "Summarizing context",
@@ -104,7 +124,7 @@ export const AgenticProcessIndicator = () => {
     (step) => step.key === status
   );
   const currentStep = processSteps[currentStepIndex];
-  
+
   // Fallback for unknown status messages
   const displayStep = currentStep || {
     label: "Processing",

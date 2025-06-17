@@ -12,11 +12,13 @@ import {
   X,
   Zap,
   ArrowRight,
+  Settings,
 } from "@/components/ui/icons";
 
 const navigation = [
   { name: "Chat", href: "/chat/new", icon: MessageSquare },
   { name: "Models", href: "/models", icon: Brain },
+  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function Navbar() {

@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import rehypeKatex from "rehype-katex";
+import type { Pluggable } from "unified";
 import { EnhancedTabCodeBlock } from "./EnhancedTabCodeBlock";
 import { CodeBlock } from "./CodeBlock";
 import { MermaidComponent } from "./MermaidComponentNew";
@@ -46,11 +47,9 @@ export function FullMarkdownViewer({
     const schema: unknown = {
       ...defaultSchema,
       tagNames: [...(defaultSchema.tagNames || []), "details", "summary"],
-    };
-
-    // Remove mermaid plugin to fix runSync async error
+    }; // Remove mermaid plugin to fix runSync async error
     // We'll handle mermaid diagrams with custom component instead
-    const plugins: any[] = [[rehypeSanitize, schema], rehypeKatex];
+    const plugins = [[rehypeSanitize, schema], rehypeKatex] as Pluggable[];
 
     return plugins;
   }, []);
@@ -119,7 +118,7 @@ export function FullMarkdownViewer({
         const contextBefore = lines.slice(Math.max(0, index - 2), index);
         const contextAfter = lines.slice(
           index + 1,
-          Math.min(lines.length, index + 3),
+          Math.min(lines.length, index + 3)
         );
 
         result.push(...contextBefore, line, ...contextAfter);
@@ -344,19 +343,21 @@ export function FullMarkdownViewer({
           } else {
             return (
               <div key={index} className="prose prose-invert max-w-none">
+                {" "}
                 <ReactMarkdown
                   remarkPlugins={remarkPlugins}
                   rehypePlugins={rehypePlugins}
                   components={{
                     // Enhanced code block rendering
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     code({
-                      node: _node,
                       inline,
                       className,
                       children,
                       ...props
-                    }: any) {
+                    }: React.HTMLAttributes<HTMLElement> & {
+                      inline?: boolean;
+                      children?: React.ReactNode;
+                    }) {
                       const match = /language-(\w+)/.exec(className || "");
                       const language = match ? match[1] : "";
                       const code = String(children).replace(/\n$/, "");

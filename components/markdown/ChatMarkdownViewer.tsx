@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import rehypeKatex from "rehype-katex";
+import type { Pluggable } from "unified";
 import { EnhancedTabCodeBlock } from "./EnhancedTabCodeBlock";
 import { CodeBlock } from "./CodeBlock";
 import { MermaidComponent } from "./MermaidComponent";
@@ -21,18 +22,15 @@ export function ChatMarkdownViewer({
 }: ChatMarkdownViewerProps) {
   // Configure plugins with proper async handling
   const remarkPlugins = useMemo(() => [remarkGfm, remarkMath], []);
-
   const rehypePlugins = useMemo(() => {
-    const schema: any = {
+    const schema = {
       ...defaultSchema,
       tagNames: [...(defaultSchema.tagNames || []), "details", "summary"],
     };
 
     // Remove mermaid plugin to fix runSync async error
     // We'll handle mermaid diagrams with custom component instead
-    const plugins: any[] = [[rehypeSanitize, schema], rehypeKatex];
-
-    return plugins;
+    return [[rehypeSanitize, schema], rehypeKatex] as Pluggable[];
   }, []);
 
   // Parse content to detect special sections (configuration blocks, etc.)
@@ -50,7 +48,17 @@ export function ChatMarkdownViewer({
     }> = [];
 
     const lines = markdown.split("\n");
-    let currentSection: any = null;
+    let currentSection: {
+      type: "config" | "regular";
+      content: string;
+      title?: string;
+      tabs?: Array<{
+        id: string;
+        label: string;
+        language: string;
+        code: string;
+      }>;
+    } | null = null;
     let inCodeBlock = false;
     let currentCode = "";
     let currentLang = "";
@@ -102,6 +110,9 @@ export function ChatMarkdownViewer({
                 if (currentLang === "bash" || currentLang === "sh")
                   label = "BASH";
 
+                if (!currentSection.tabs) {
+                  currentSection.tabs = [];
+                }
                 currentSection.tabs.push({
                   id: `${currentSection.title}-${currentLang}`,
                   label,

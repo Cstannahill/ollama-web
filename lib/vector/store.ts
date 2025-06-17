@@ -36,24 +36,43 @@ export class VectorStoreService {
     if (!validation.isValid) {
       console.warn(
         "Vector store initialized with incomplete agentic setup:",
-        validation.missingFields,
+        validation.missingFields
       );
     }
+
     // Use vector store path from settings if available
     const vectorStorePath =
       settings.agenticConfig.vectorStorePath || options?.storagePath;
+
     if (vectorStorePath) {
       this.store = new BrowserVectorStore();
       await this.store.initialize(vectorStorePath);
       console.log("Vector store initialized with path:", vectorStorePath);
+      console.log(
+        "Note: In browser environment, data is persisted to IndexedDB"
+      );
+
+      // Load existing data if available
+      try {
+        const existingData = await this.store.loadData();
+        if (existingData) {
+          this.docs = existingData.documents;
+          this.embeddings = existingData.embeddings;
+          console.log(
+            `Loaded ${this.docs.length} documents from persistent storage`
+          );
+        }
+      } catch (error) {
+        console.warn("Failed to load existing vector data:", error);
+        // Continue with empty vectors rather than failing initialization
+      }
     }
 
     this.initialized = true;
   }
-
   async addConversation(
     conversationId: string,
-    messages: Document[],
+    messages: Document[]
   ): Promise<void> {
     void conversationId;
     if (!this.initialized) throw new Error("Vector store not initialized");
@@ -67,20 +86,26 @@ export class VectorStoreService {
     try {
       const embs = await this.embedder.generateEmbeddings(
         texts,
-        embeddingModel,
+        embeddingModel
       );
       this.docs.push(...messages);
       this.embeddings.push(...embs);
+
+      // Persist to storage if available
+      if (this.store) {
+        await this.store.saveData(this.docs, this.embeddings);
+        console.log(`Persisted ${this.docs.length} total documents to storage`);
+      }
     } catch (error) {
       console.error("Failed to add conversation to vector store:", error);
       throw new Error(
-        `Vector store operation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Vector store operation failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }
   }
   async search(
     query: string,
-    filters?: SearchFilters,
+    filters?: SearchFilters
   ): Promise<SearchResult[]> {
     if (!this.initialized) throw new Error("Vector store not initialized");
 
@@ -128,7 +153,7 @@ export class VectorStoreService {
     } catch (error) {
       console.error("Vector store search failed:", error);
       throw new Error(
-        `Vector search failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Vector search failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }
   }
@@ -138,13 +163,50 @@ export class VectorStoreService {
     this.searchCache.clear();
     this.cacheOrder = [];
   }
-
   // Add method to get current store statistics
-  getStats(): { totalDocs: number; cacheSize: number; initialized: boolean } {
+  getStats(): {
+    totalDocs: number;
+    cacheSize: number;
+    initialized: boolean;
+    storagePath?: string;
+  } {
     return {
       totalDocs: this.docs.length,
       cacheSize: this.searchCache.size,
       initialized: this.initialized,
+      storagePath: this.store?.getPath() || undefined,
     };
+  }
+
+  // Add method to manually save current state
+  async saveToStorage(): Promise<void> {
+    if (this.store && this.initialized) {
+      await this.store.saveData(this.docs, this.embeddings);
+      console.log(`Manually saved ${this.docs.length} documents to storage`);
+    }
+  }
+
+  // Add method to get storage statistics
+  async getStorageStats(): Promise<{
+    totalDocs: number;
+    dbSize: number;
+    lastModified: number | null;
+  } | null> {
+    if (this.store) {
+      return await this.store.getStats();
+    }
+    return null;
+  }
+
+  // Add method to clear all data
+  async clearAll(): Promise<void> {
+    this.docs = [];
+    this.embeddings = [];
+    this.clearCache();
+
+    if (this.store) {
+      await this.store.clear();
+      console.log("Cleared all vector store data");
+    }
   }
 }

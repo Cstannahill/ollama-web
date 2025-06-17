@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PresetManager } from "./PresetManager";
 import { OllamaClient } from "@/lib/ollama/client";
 import { OLLAMA_BASE_URL } from "@/lib/config";
 
@@ -84,7 +85,7 @@ export const EnhancedChatSettings = () => {
 
   const handleSliderChange = (
     key: keyof typeof chatSettings,
-    value: number,
+    value: number
   ) => {
     updateChatSettings({ [key]: value });
   };
@@ -287,12 +288,11 @@ export const EnhancedChatSettings = () => {
                       onChange={(e) => setVectorStorePath(e.target.value)}
                       placeholder="e.g., C:\\Users\\YourName\\ollama-vectors or ~/Documents/ollama-vectors"
                       className={`flex-1 ${!vectorStorePath ? "border-destructive/50" : ""}`}
-                    />
+                    />{" "}
                     <input
                       type="file"
-                      /* @ts-ignore - non-standard attribute for directory picking */
+                      /* @ts-expect-error - non-standard webkitdirectory attribute */
                       webkitdirectory=""
-                      /* @ts-ignore - non-standard attribute for directory picking */
                       directory=""
                       multiple={false}
                       style={{ display: "none" }}
@@ -335,7 +335,7 @@ export const EnhancedChatSettings = () => {
                           }
                         } else {
                           const fileInput = document.getElementById(
-                            "directory-picker",
+                            "directory-picker"
                           ) as HTMLInputElement;
                           fileInput?.click();
                         }
@@ -473,7 +473,6 @@ export const EnhancedChatSettings = () => {
                   <h4 className="text-sm font-medium text-foreground">
                     Advanced Options
                   </h4>
-
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-3">
                       <Label>
@@ -519,7 +518,6 @@ export const EnhancedChatSettings = () => {
                       />
                     </div>
                   </div>
-
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <Label>
@@ -539,7 +537,6 @@ export const EnhancedChatSettings = () => {
                         className="w-4 h-4"
                       />
                     </div>
-
                     <div className="flex items-center justify-between">
                       <Label>
                         Response Summarization
@@ -558,7 +555,6 @@ export const EnhancedChatSettings = () => {
                         className="w-4 h-4"
                       />
                     </div>
-
                     <div className="flex items-center justify-between">
                       <Label>
                         Caching
@@ -574,9 +570,152 @@ export const EnhancedChatSettings = () => {
                         }
                         className="w-4 h-4"
                       />
+                    </div>{" "}
+                  </div>{" "}
+                </div>
+
+                {/* Timeout Settings */}
+                <Separator />
+                <div className="space-y-4">
+                  <h4 className="text-sm font-medium text-foreground">
+                    Timeout Settings
+                    <span className="text-xs text-muted-foreground ml-2">
+                      (Adjust timeouts for better reliability)
+                    </span>
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div className="space-y-3">
+                      <Label>
+                        Query Rewrite Timeout
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (
+                          {(
+                            (agenticConfig.stepTimeouts?.queryRewrite ??
+                              30000) / 1000
+                          ).toFixed(0)}
+                          s)
+                        </span>
+                      </Label>
+                      <input
+                        type="range"
+                        min="10000"
+                        max="60000"
+                        step="5000"
+                        value={
+                          agenticConfig.stepTimeouts?.queryRewrite ?? 30000
+                        }
+                        onChange={(e) =>
+                          setAgenticConfig({
+                            stepTimeouts: {
+                              ...agenticConfig.stepTimeouts,
+                              queryRewrite: parseInt(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label>
+                        Embedding Timeout
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (
+                          {(
+                            (agenticConfig.stepTimeouts?.embedding ?? 45000) /
+                            1000
+                          ).toFixed(0)}
+                          s)
+                        </span>
+                      </Label>
+                      <input
+                        type="range"
+                        min="15000"
+                        max="90000"
+                        step="5000"
+                        value={agenticConfig.stepTimeouts?.embedding ?? 45000}
+                        onChange={(e) =>
+                          setAgenticConfig({
+                            stepTimeouts: {
+                              ...agenticConfig.stepTimeouts,
+                              embedding: parseInt(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label>
+                        Document Retrieval Timeout
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (
+                          {(
+                            (agenticConfig.stepTimeouts?.retrieval ?? 60000) /
+                            1000
+                          ).toFixed(0)}
+                          s)
+                        </span>
+                      </Label>
+                      <input
+                        type="range"
+                        min="20000"
+                        max="120000"
+                        step="10000"
+                        value={agenticConfig.stepTimeouts?.retrieval ?? 60000}
+                        onChange={(e) =>
+                          setAgenticConfig({
+                            stepTimeouts: {
+                              ...agenticConfig.stepTimeouts,
+                              retrieval: parseInt(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label>
+                        Response Generation Timeout
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (
+                          {(
+                            (agenticConfig.stepTimeouts?.generation ?? 180000) /
+                            1000
+                          ).toFixed(0)}
+                          s)
+                        </span>
+                      </Label>
+                      <input
+                        type="range"
+                        min="60000"
+                        max="300000"
+                        step="30000"
+                        value={agenticConfig.stepTimeouts?.generation ?? 180000}
+                        onChange={(e) =>
+                          setAgenticConfig({
+                            stepTimeouts: {
+                              ...agenticConfig.stepTimeouts,
+                              generation: parseInt(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
+                      />
                     </div>
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    💡 <strong>Tip:</strong> Increase timeouts if you experience
+                    frequent timeout errors. Lower values make the system more
+                    responsive but may fail on slow operations.
+                  </p>
                 </div>
+
+                {/* Preset Manager */}
+                <Separator />
+                <PresetManager />
 
                 {/* Recommendations */}
                 {validation.recommendations.length > 0 && (

@@ -14,11 +14,15 @@ import { EnhancedChatSettings } from "./EnhancedChatSettings";
 import { TypingIndicator } from "./TypingIndicator";
 import { AgentStatus } from "./AgentStatus";
 import { AgentThinking } from "./AgentThinking";
-import { AgentSummary } from "./AgentSummary";
 import { AgentError } from "./AgentError";
+import { MetricsPanel } from "./MetricsPanel";
+import { PipelineTimeline } from "./PipelineTimeline";
+import { DebugConsole } from "./DebugConsole";
 import { TokenInfo } from "./TokenInfo";
 import { AgentDocs } from "./AgentDocs";
 import { AgentToolOutput } from "./AgentToolOutput";
+import { MultiTurnSummary } from "./MultiTurnSummary";
+import { DynamicComponentSelector } from "./presentational/DynamicComponentSelector";
 
 export const ChatInterface = ({ threadId }: { threadId?: string }) => {
   const {
@@ -31,6 +35,7 @@ export const ChatInterface = ({ threadId }: { threadId?: string }) => {
     error,
     setError,
     setMode,
+    multiTurnSummary,
   } = useChatStore();
 
   const { getActiveConversation, activeConversationId, setActiveConversation } =
@@ -111,13 +116,10 @@ export const ChatInterface = ({ threadId }: { threadId?: string }) => {
           </div>
         </div>
       </div>
-
       {/* Conversation Header */}
       <ConversationHeader />
-
       {/* Progress Bar */}
       {isStreaming && <Progress value={progress} />}
-
       {/* Messages Area */}
       <div
         className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-4 max-w-6xl mx-auto w-full"
@@ -134,23 +136,42 @@ export const ChatInterface = ({ threadId }: { threadId?: string }) => {
               <ChatMessage key={i} message={m} />
             ))}
             {isStreaming && <TypingIndicator />}
+            {/* Enhanced Presentational Components - Dynamically Selected */}
+            <DynamicComponentSelector className="my-4" />
             <AgentStatus />
             <AgentDocs />
-            <AgentToolOutput />
-            <AgentThinking />
+            <AgentToolOutput /> <AgentThinking />
             <AgentError />
-            <AgentSummary />
+            <MetricsPanel />
+            <PipelineTimeline
+              metrics={
+                useChatStore.getState().metrics || {
+                  startTime: Date.now(),
+                  docsRetrieved: 0,
+                  tokensEstimated: 0,
+                }
+              }
+              currentStep={status?.toLowerCase().replace(" ", "-")}
+              className="my-2"
+            />
+            {multiTurnSummary && (
+              <MultiTurnSummary
+                summary={multiTurnSummary.summary}
+                metrics={multiTurnSummary.metrics}
+                className="my-4"
+              />
+            )}
             <TokenInfo />
           </>
         )}
         <div ref={bottomRef} />
       </div>
-
       {/* Chat Input */}
-      <ChatInput onSend={sendMessage} disabled={isStreaming} />
-
+      <ChatInput onSend={sendMessage} disabled={isStreaming} />{" "}
       {/* Error Toast */}
       {error && <Toast message={error} onDismiss={() => setError(null)} />}
+      {/* Debug Console - Only in development */}
+      {process.env.NODE_ENV === "development" && <DebugConsole />}
     </div>
   );
 };

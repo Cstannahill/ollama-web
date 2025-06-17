@@ -12,6 +12,7 @@ export interface Conversation {
   updatedAt: number;
   tags?: string[];
   pinned?: boolean;
+  systemPrompt?: string; // Conversation-specific system prompt
 }
 
 interface ConversationState {
@@ -25,6 +26,7 @@ interface ConversationState {
   deleteConversation: (id: string) => void;
   setActiveConversation: (id: string | null) => void;
   addMessageToConversation: (conversationId: string, message: Message) => void;
+  updateSystemPrompt: (conversationId: string, systemPrompt: string) => void;
   duplicateConversation: (id: string) => string;
   togglePin: (id: string) => void;
   setSearchQuery: (query: string) => void;
@@ -127,6 +129,23 @@ export const useConversationStore = create<ConversationState>()(
         if (updatedConv) {
           conversationIndexer.indexConversation(updatedConv);
         }
+      },
+
+      updateSystemPrompt: (conversationId, systemPrompt) => {
+        set((state) => {
+          const conversations = state.conversations.map((conv) => {
+            if (conv.id === conversationId) {
+              return {
+                ...conv,
+                systemPrompt,
+                updatedAt: Date.now(),
+              };
+            }
+            return conv;
+          });
+
+          return { conversations };
+        });
       },
 
       duplicateConversation: (id) => {

@@ -5,6 +5,9 @@ import { AdvancedMarkdown } from "../markdown";
 import { ChatMarkdownViewer } from "../markdown/ChatMarkdownViewer";
 import { ErrorBoundary } from "../ui";
 import { useState } from "react";
+import { ResponseSummaryComponent } from "./ResponseSummary";
+import { ResponseSummarizerService } from "../../services/response-summarizer";
+import { AIEnhancedMessage } from "./AIEnhancedMessage";
 
 // Custom Copy icon to avoid lucide-react issues
 const Copy = ({ className }: { className?: string }) => (
@@ -32,11 +35,16 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
   const [copied, setCopied] = useState(false);
 
   // Check if message content has complex formatting that would benefit from enhanced viewer
-  const hasComplexFormatting = message.content.includes('```') || 
-                              message.content.includes('# ') || 
-                              message.content.includes('## ') ||
-                              message.content.includes('$') ||
-                              message.content.includes('mermaid');
+  const hasComplexFormatting =
+    message.content.includes("```") ||
+    message.content.includes("# ") ||
+    message.content.includes("## ") ||
+    message.content.includes("$") ||
+    message.content.includes("mermaid");
+
+  // Check if response should be auto-summarized (only for assistant messages)
+  const shouldAutoSummarize =
+    !isUser && ResponseSummarizerService.shouldSummarize(message.content);
 
   return (
     <ErrorBoundary>
@@ -51,6 +59,7 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
               : "bg-muted/50 text-foreground mr-8"
           )}
         >
+          {" "}
           <button
             className="absolute top-2 right-2 opacity-50 hover:opacity-100 transition-opacity z-10"
             onClick={() => {
@@ -60,19 +69,45 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
             }}
             aria-label="Copy message"
           >
-            <Copy className="w-4 h-4" />
+            <Copy className="w-4 h-4" />{" "}
           </button>
+          {/* Message Content with AI Enhancement for assistant messages */}
+          {!isUser ? (
+            // Use AI-enhanced rendering for assistant responses
+            <AIEnhancedMessage
+              content={message.content}
+              metadata={{
+                messageRole: message.role,
+                timestamp: Date.now(),
+                hasComplexFormatting,
+              }}
+              showAnalytics={process.env.NODE_ENV === "development"}
+            />
+          ) : shouldAutoSummarize ? (
+            // Use summary for very long user messages
+            <ResponseSummaryComponent
+              content={message.content}
+              autoSummarize={true}
+              summaryOptions={{
+                summaryStyle: "bullet-points",
+                maxLength: 300,
+                bulletPoints: true,
+                includeKeywords: true,
+              }}
+            />
+          ) : (
+            // Standard markdown rendering for user messages
             <div className="prose prose-sm max-w-none dark:prose-invert">
-            {hasComplexFormatting && !isUser ? (
-              <ChatMarkdownViewer 
-                content={message.content}
-                className="bg-transparent"
-              />
-            ) : (
-              <AdvancedMarkdown content={message.content} />
-            )}
-          </div>
-          
+              {hasComplexFormatting ? (
+                <ChatMarkdownViewer
+                  content={message.content}
+                  className="bg-transparent"
+                />
+              ) : (
+                <AdvancedMarkdown content={message.content} />
+              )}
+            </div>
+          )}
           {copied && (
             <span className="absolute bottom-2 right-2 text-xs opacity-75 z-10">
               Copied
